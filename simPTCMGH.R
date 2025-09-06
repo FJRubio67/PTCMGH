@@ -34,7 +34,7 @@ simPTCMGH <- function(n, seed, hstr, baseline, des_theta = NULL, des_t = NULL, d
   if(hstr == "PH"){
     theta_i <- as.vector(exp(des_theta%*%theta))
     des_beta_h <- as.vector(des_h%*%beta_h)
-    
+    F_i <- 1 - exp(0)
   }
   
   
