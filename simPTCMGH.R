@@ -1,7 +1,7 @@
 library(HazReg)
 
 simPTCMGH <- function(n, seed, hstr, baseline, des_theta = NULL, des_t = NULL, des_h = NULL, des = NULL, 
-                      theta = NULL, beta_t = NULL, beta_h = NULL, beta = NULL){
+                      par_base = NULL, alpha = NULL, beta_t = NULL, beta_h = NULL, beta = NULL){
   
   set.seed(seed)
   u <- runif(n)
@@ -16,25 +16,35 @@ simPTCMGH <- function(n, seed, hstr, baseline, des_theta = NULL, des_t = NULL, d
   beta_h = as.vector(beta_h)
   
   if (baseline == "LN") 
-    quantf <- function(p) qlnorm(p, theta[1], theta[2])
+    quantf <- function(p) qlnorm(p, par_base[1], par_base[2])
   if (baseline == "LL") 
-    quantf <- function(p) qllogis(p, theta[1], theta[2])
+    quantf <- function(p) qllogis(p, par_base[1], par_base[2])
   if (baseline == "G") 
-    quantf <- function(p) qgamma(p, theta[1], theta[2])
+    quantf <- function(p) qgamma(p, par_base[1], par_base[2])
   if (baseline == "W") 
-    quantf <- function(p) qweibull(p, theta[1], theta[2])
+    quantf <- function(p) qweibull(p, par_base[1], par_base[2])
   if (baseline == "PGW") 
-    quantf <- function(p) qpgw(p, theta[1], theta[2], theta[3])
+    quantf <- function(p) qpgw(p, par_base[1], par_base[2], par_base[3])
   if (baseline == "EW") 
-    quantf <- function(p) qew(p, theta[1], theta[2], theta[3])
+    quantf <- function(p) qew(p, par_base[1], par_base[2], par_base[3])
   if (baseline == "GG") 
-    quantf <- function(p) qggamma(p, theta[1], theta[2], theta[3])
+    quantf <- function(p) qggamma(p, par_base[1], par_base[2], par_base[3])
   
   
   if(hstr == "PH"){
-    theta_i <- as.vector(exp(des_theta%*%theta))
-    des_beta_h <- as.vector(des_h%*%beta_h)
-    F_i <- 1 - exp(0)
+    mexp_alpha <- as.vector(exp(-des_theta%*%alpha))
+    mexp_betah <- as.vector(exp(-des_h%*%beta_h))
+    test_surv <- 1 + log(u)*mexp_alpha
+    
+    sim <- vector()
+    for(i in 1:n){
+      if(test_surv[i] > 0){
+        arg <- 1 - exp( mexp_betah[i]*log( 1 + log(u[i])*mexp_alpha[i] ) )
+        sim[i] <- quantf(arg)
+      }
+      else sim[i]  <- Inf
+    }
+    
   }
   
   
