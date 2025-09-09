@@ -1,0 +1,57 @@
+---
+title: "Simulating from a promotion-time cure rate model"
+author: '[Francisco Javier Rubio](https://sites.google.com/site/fjavierrubio67/)'
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Promotion Time Cure Models
+
+Promotion-Time Cure Models (PTCM) are a type of survival (regression) models where a portion of the population is assumed to be cured, or to never experience the time-to-event. That is, there is a sub-population with infinite survival times. The survival function of a PTCM is given by
+
+$$
+S_c(t) = \exp\left\{ -\theta \tilde{F}(t) \right\}, \quad t \geq 0,
+$$
+where $\theta>0$ is a positive parameter, and $\tilde{F}$ is a cumulative distribution function with support on ${\mathbb R}_+$. Note that 
+
+$$
+\lim_{t\to\infty} S_c(t) = \exp\{-\theta\},
+$$
+which represents the cured fraction. Since the survival function associated with the PTCM does not decrease to zero, it is often referred to as an ``improper'' survival function [@peng:2021]. 
+
+If a covariates ${\bf x} \in {\mathbb R}^p$ are available, these can be incorporated into the two different components of the PTCM.
+
+1. Let ${\bf w} \subseteq {\bf x}$, and consider the log-link $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$.
+
+2. Let ${\bf z} \subseteq {\bf x}$, and consider the hazard structure $\tilde{H}(t \mid {\bf z})$. Then, we can define 
+
+$$
+\tilde{F}(t \mid {\bf z}) = 1 - \exp\{-\tilde{H}(t \mid {\bf z})\}.
+$$
+The hazard structure can include the proportional hazards, the accelerated failure time, or more general hazard structures @rubio:2019.
+
+The following R code presents an implementation of the simulation of survival times from a PTCM with proportional hazards, accelerated failure time, and general hazard structures coupled with a log-link for $\theta$.
+
+
+## Proportional hazards
+
+Suppose that
+
+$$
+\tilde{h}(t \mid {\bf z}) = \tilde{h}_0(t \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\},
+$$
+where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. Then, a simulation from the PTCM model with PH structure (PTCM-PH) can be obtained as:
+
+$$
+t^* = \tilde{F}_0^{-1}\left(   \right)
+$$
+if ... Otherwise $t^*=\infty$.
+# References
