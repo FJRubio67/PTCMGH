@@ -41,7 +41,7 @@ The hazard structure can include the proportional hazards, the accelerated failu
 The following R code presents an implementation of the simulation of survival times from a PTCM with proportional hazards, accelerated failure time, and general hazard structures coupled with a log-link for $\theta$.
 
 
-## Proportional hazards
+## Proportional Hazards
 
 Suppose that the hazard and cumulative hazard follow a proportional hazards (PH) structure:
 
@@ -56,4 +56,25 @@ $$
 t^* = \tilde{F}_0^{-1}\left( 1 - \exp\left\{ \exp\left\{ - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
 $$
 if $1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\}>0$, and $t^*=\infty$ otherwise.
+
+
+## Accelerated Failure Time
+
+Suppose that the hazard and cumulative hazard follow an accelerated failure time (AFT) hazard structure:
+
+\begin{align}
+\tilde{h}(t \mid {\bf z}) &= \tilde{h}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\beta}\} \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &= \tilde{H}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\beta}\} \mid \boldsymbol{\gamma}) ,
+\end{align}
+
+where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. Then, a simulation from the PTCM model with PH structure (PTCM-AFT) can be obtained as:
+
+$$
+t^* = \tilde{F}_0^{-1}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right)  \exp\left\{ - {\bf z}^{\top}\boldsymbol{\beta} \right\}.
+$$
+if $\log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
+
+## General Hazards
+
+
 # References

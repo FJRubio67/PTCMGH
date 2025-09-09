@@ -1548,7 +1548,7 @@ survival times from a PTCM with proportional hazards, accelerated
 failure time, and general hazard structures coupled with a log-link for
 <span class="math inline">\(\theta\)</span>.</p>
 <div id="proportional-hazards" class="section level2">
-<h2>Proportional hazards</h2>
+<h2>Proportional Hazards</h2>
 <p>Suppose that the hazard and cumulative hazard follow a proportional
 hazards (PH) structure:</p>
 <p><span class="math display">\[\begin{align}
@@ -1567,7 +1567,36 @@ z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 +
 \log(u)\exp\left\{-\alpha_0 - {\bf
 w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
 \]</span> if <span class="math inline">\(1 + \log(u)\exp\left\{-\alpha_0
-- {\bf w}^{\top}\boldsymbol{\alpha}  \right\}&gt;0\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise. # References</p>
+- {\bf w}^{\top}\boldsymbol{\alpha}  \right\}&gt;0\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
+</div>
+<div id="accelerated-failure-time" class="section level2">
+<h2>Accelerated Failure Time</h2>
+<p>Suppose that the hazard and cumulative hazard follow an accelerated
+failure time (AFT) hazard structure:</p>
+<p><span class="math display">\[\begin{align}
+\tilde{h}(t \mid {\bf z}) &amp;= \tilde{h}_0(t \exp\{{\bf z}^{\top}
+\boldsymbol{\beta}\} \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top}
+\boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &amp;= \tilde{H}_0(t \exp\{{\bf z}^{\top}
+\boldsymbol{\beta}\} \mid \boldsymbol{\gamma}) ,
+\end{align}\]</span></p>
+<p>where <span class="math inline">\(\tilde{h}_0\)</span> is a baseline
+hazard associated with a distribution <span class="math inline">\(\tilde{F}_0\)</span>, with parameters <span class="math inline">\(\boldsymbol{\gamma}\)</span>. Let also <span class="math inline">\(\theta({\bf w}) = \exp({\bf
+w}^{\top}{\boldsymbol{\alpha}})\)</span>, and <span class="math inline">\(u\)</span> be a realisation from a <span class="math inline">\(U(0,1)\)</span> distribution. Then, a simulation
+from the PTCM model with PH structure (PTCM-AFT) can be obtained as:</p>
+<p><span class="math display">\[
+t^* = \tilde{F}_0^{-1}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf
+w}^{\top}\boldsymbol{\alpha}  \right\} \right)  \exp\left\{ - {\bf
+z}^{\top}\boldsymbol{\beta} \right\}.
+\]</span> if <span class="math inline">\(\log(u)\exp\left\{-\alpha_0 -
+{\bf w}^{\top}\boldsymbol{\alpha}  \right\} &lt; 1\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
+</div>
+<div id="general-hazards" class="section level2">
+<h2>General Hazards</h2>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-peng:2021" class="csl-entry">
 Peng, Y., and B. Yu. 2021. <em>Cure Models: Methods, Applications, and
@@ -1578,7 +1607,6 @@ Rubio, F. J., L. Remontet, N. P. Jewell, and A. Belot. 2019. <span>“On a
 General Structure for Hazard-Based Regression Models: An Application to
 Population-Based Cancer Research.”</span> <em>Statistical Methods in
 Medical Research</em> 28 (8): 2404–17.
-</div>
 </div>
 </div>
 </div>
