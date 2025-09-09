@@ -43,15 +43,17 @@ The following R code presents an implementation of the simulation of survival ti
 
 ## Proportional hazards
 
-Suppose that
+Suppose that the hazard and cumulative hazard follow a proportional hazards (PH) structure:
 
-$$
-\tilde{h}(t \mid {\bf z}) = \tilde{h}_0(t \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\},
-$$
+\begin{align}
+\tilde{h}(t \mid {\bf z}) &= \tilde{h}_0(t \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &= \tilde{H}_0(t \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\},
+\end{align}
+
 where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. Then, a simulation from the PTCM model with PH structure (PTCM-PH) can be obtained as:
 
 $$
-t^* = \tilde{F}_0^{-1}\left(   \right)
+t^* = \tilde{F}_0^{-1}\left( 1 - \exp\left\{ \exp\left\{ - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
 $$
-if ... Otherwise $t^*=\infty$.
+if $1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\}>0$, and $t^*=\infty$ otherwise.
 # References
