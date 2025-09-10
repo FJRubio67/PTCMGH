@@ -76,5 +76,17 @@ if $\log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 
 
 ## General Hazards
 
+Suppose that the hazard and cumulative hazard follow a General Hazard (GH) structure [@chen:2001] [@rubio:2019]:
+
+\begin{align}
+\tilde{h}(t \mid {\bf z}) &= \tilde{h}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\eta}\} \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &= \tilde{H}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\eta}\} \mid \boldsymbol{\gamma})  \exp\{{\bf z}^{\top} \boldsymbol{\beta} - {\bf z}^{\top} \boldsymbol{\eta}\}\},
+\end{align}
+
+where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. Then, a simulation from the PTCM model with PH structure (PTCM-AFT) can be obtained as:
+
+$$
+t^* = .
+$$
 
 # References

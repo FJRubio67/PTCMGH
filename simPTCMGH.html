@@ -11,7 +11,7 @@
 
 <meta name="author" content="Francisco Javier Rubio" />
 
-<meta name="date" content="2025-09-09" />
+<meta name="date" content="2025-09-10" />
 
 <title>Simulating from a promotion-time cure rate model</title>
 
@@ -1506,7 +1506,7 @@ border-radius: 0px;
 model</h1>
 <h4 class="author"><a href="https://sites.google.com/site/fjavierrubio67/">Francisco Javier
 Rubio</a></h4>
-<h4 class="date">September 09, 2025</h4>
+<h4 class="date">September 10, 2025</h4>
 
 </div>
 
@@ -1593,11 +1593,34 @@ z}^{\top}\boldsymbol{\beta} \right\}.
 </div>
 <div id="general-hazards" class="section level2">
 <h2>General Hazards</h2>
+<p>Suppose that the hazard and cumulative hazard follow a General Hazard
+(GH) structure <span class="citation">(Chen and Jewell 2001)</span>
+<span class="citation">(Rubio et al. 2019)</span>:</p>
+<p><span class="math display">\[\begin{align}
+\tilde{h}(t \mid {\bf z}) &amp;= \tilde{h}_0(t \exp\{{\bf z}^{\top}
+\boldsymbol{\eta}\} \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top}
+\boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &amp;= \tilde{H}_0(t \exp\{{\bf z}^{\top}
+\boldsymbol{\eta}\} \mid \boldsymbol{\gamma})  \exp\{{\bf z}^{\top}
+\boldsymbol{\beta} - {\bf z}^{\top} \boldsymbol{\eta}\}\},
+\end{align}\]</span></p>
+<p>where <span class="math inline">\(\tilde{h}_0\)</span> is a baseline
+hazard associated with a distribution <span class="math inline">\(\tilde{F}_0\)</span>, with parameters <span class="math inline">\(\boldsymbol{\gamma}\)</span>. Let also <span class="math inline">\(\theta({\bf w}) = \exp({\bf
+w}^{\top}{\boldsymbol{\alpha}})\)</span>, and <span class="math inline">\(u\)</span> be a realisation from a <span class="math inline">\(U(0,1)\)</span> distribution. Then, a simulation
+from the PTCM model with PH structure (PTCM-AFT) can be obtained as:</p>
+<p><span class="math display">\[
+t^* = .
+\]</span></p>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-chen:2001" class="csl-entry">
+Chen, Y. Q., and N. P. Jewell. 2001. <span>“On a General Class of
+Semiparametric Hazards Regression Models.”</span> <em>Biometrika</em> 88
+(3): 687–702.
+</div>
 <div id="ref-peng:2021" class="csl-entry">
 Peng, Y., and B. Yu. 2021. <em>Cure Models: Methods, Applications, and
 Implementation</em>. CRC Press.
