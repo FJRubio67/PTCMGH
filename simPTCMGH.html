@@ -11,7 +11,7 @@
 
 <meta name="author" content="Francisco Javier Rubio" />
 
-<meta name="date" content="2025-09-10" />
+<meta name="date" content="2025-09-17" />
 
 <title>Simulating from a promotion-time cure rate model</title>
 
@@ -1326,7 +1326,6 @@ if (window.hljs) {
 div.csl-bib-body { }
 div.csl-entry {
 clear: both;
-margin-bottom: 0em;
 }
 .hanging div.csl-entry {
 margin-left:2em;
@@ -1506,7 +1505,7 @@ border-radius: 0px;
 model</h1>
 <h4 class="author"><a href="https://sites.google.com/site/fjavierrubio67/">Francisco Javier
 Rubio</a></h4>
-<h4 class="date">September 10, 2025</h4>
+<h4 class="date">September 17, 2025</h4>
 
 </div>
 
@@ -1567,7 +1566,7 @@ z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 +
 \log(u)\exp\left\{-\alpha_0 - {\bf
 w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
 \]</span> if <span class="math inline">\(1 + \log(u)\exp\left\{-\alpha_0
-- {\bf w}^{\top}\boldsymbol{\alpha}  \right\}&gt;0\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
+- {\bf w}^{\top}\boldsymbol{\alpha} \right\}&gt;0\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
 </div>
 <div id="accelerated-failure-time" class="section level2">
 <h2>Accelerated Failure Time</h2>
@@ -1589,7 +1588,7 @@ t^* = \tilde{F}_0^{-1}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf
 w}^{\top}\boldsymbol{\alpha}  \right\} \right)  \exp\left\{ - {\bf
 z}^{\top}\boldsymbol{\beta} \right\}.
 \]</span> if <span class="math inline">\(\log(u)\exp\left\{-\alpha_0 -
-{\bf w}^{\top}\boldsymbol{\alpha}  \right\} &lt; 1\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
+{\bf w}^{\top}\boldsymbol{\alpha} \right\} &lt; 1\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
 </div>
 <div id="general-hazards" class="section level2">
 <h2>General Hazards</h2>
@@ -1609,13 +1608,31 @@ hazard associated with a distribution <span class="math inline">\(\tilde{F}_0\)<
 w}^{\top}{\boldsymbol{\alpha}})\)</span>, and <span class="math inline">\(u\)</span> be a realisation from a <span class="math inline">\(U(0,1)\)</span> distribution. Then, a simulation
 from the PTCM model with PH structure (PTCM-AFT) can be obtained as:</p>
 <p><span class="math display">\[
-t^* = .
-\]</span></p>
+t^* = \exp\left\{ - {\bf z}^{\top}\boldsymbol{\eta} \right\}
+\tilde{F}_0^{-1}\left( 1 - \exp\left\{ \exp\left\{ {\bf
+z}^{\top}\boldsymbol{\eta}  - {\bf z}^{\top}\boldsymbol{\beta}
+\right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf
+w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
+\]</span> if <span class="math inline">\(1 - \exp\left\{ \exp\left\{
+{\bf z}^{\top}\boldsymbol{\eta} - {\bf z}^{\top}\boldsymbol{\beta}
+\right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf
+w}^{\top}\boldsymbol{\alpha} \right\} \right] \right\} &lt; 1\)</span>,
+and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
 </div>
+</div>
+<div id="a-general-simulation-strategy" class="section level1">
+<h1>A general simulation strategy</h1>
+<p>Provided that one can simulate from the distribution <span class="math inline">\(\tilde{F}(t \mid {\bf z})\)</span> using numerical
+methods, simulating from a PTCM can be done simply by simulating <span class="math inline">\(u\sim U(0,1)\)</span>, and solving</p>
+<p><span class="math display">\[
+t^* = \tilde{F}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf
+w}^{\top}\boldsymbol{\alpha}  \right\} \mid {\bf z} \right)
+\]</span> if <span class="math inline">\(-\log(u) \exp\left\{-\alpha_0 -
+{\bf w}^{\top}\boldsymbol{\alpha} \right\} &lt; 1\)</span>, and <span class="math inline">\(t^*=\infty\)</span> otherwise.</p>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-chen:2001" class="csl-entry">
 Chen, Y. Q., and N. P. Jewell. 2001. <span>“On a General Class of
 Semiparametric Hazards Regression Models.”</span> <em>Biometrika</em> 88

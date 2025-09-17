@@ -86,7 +86,18 @@ Suppose that the hazard and cumulative hazard follow a General Hazard (GH) struc
 where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. Then, a simulation from the PTCM model with PH structure (PTCM-AFT) can be obtained as:
 
 $$
-t^* = .
+t^* = \exp\left\{ - {\bf z}^{\top}\boldsymbol{\eta} \right\} \tilde{F}_0^{-1}\left( 1 - \exp\left\{ \exp\left\{ {\bf z}^{\top}\boldsymbol{\eta}  - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
 $$
+if $1 - \exp\left\{ \exp\left\{ {\bf z}^{\top}\boldsymbol{\eta}  - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\} < 1$, and $t^*=\infty$ otherwise.
+
+# A general simulation strategy
+
+Provided that one can simulate from the distribution $\tilde{F}(t \mid {\bf z})$ using numerical methods, simulating from a PTCM can be done simply by simulating $u\sim U(0,1)$, and solving
+
+$$
+t^* = \tilde{F}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \mid {\bf z} \right)
+$$
+if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
+
 
 # References
