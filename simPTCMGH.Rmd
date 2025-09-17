@@ -100,4 +100,5 @@ $$
 if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
 
 
+
 # References
