@@ -99,6 +99,11 @@ t^* = \tilde{F}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{
 $$
 if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
 
+# R code
 
+```{r}
+
+
+```
 
 # References

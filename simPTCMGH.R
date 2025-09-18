@@ -18,9 +18,9 @@ source("routines.R")
 #beta = c(0.5, 0.5)
 
 n = 1000
+seed = 123
 set.seed(seed)
 des0 <- cbind(1, rnorm(n), rnorm(n))
-seed = 123
 sim = simPTCMGH(n = n,
           seed = seed,
           hstr = "AFT",
