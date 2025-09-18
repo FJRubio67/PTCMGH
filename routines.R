@@ -100,14 +100,27 @@ PTCMMLE <- function(init,
   times <- as.vector(times)
   status <- as.vector(as.logical(status))
   times.obs <- times[status]
+  if (!is.null(des)) 
+    des <- as.matrix(des)
+  if (!is.null(des_h)) 
+    des_h <- as.matrix(des_h)
+  if (!is.null(des_t)) 
+    des_t <- as.matrix(des_t)
+  
+  
   if (!is.null(des)) {
     des <- as.matrix(des)
     des.obs <- des[status, ]
   }
+  
+  
   if (!is.null(des_t)) {
     des_t <- as.matrix(des_t)
     des_t.obs <- des_t[status, ]
   }
+  
+  
+  
   if (hstr == "baseline") {
     if (dist == "PGW") {
       log.lik <- function(par) {
