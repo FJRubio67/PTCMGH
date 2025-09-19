@@ -399,7 +399,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # Accelerated Failure Time
+  # Accelerated Failure Time (IN PROGRESS)
   #----------------------------------------------------------------------------
   if (hstr == "AFT") {
     if (dist == "PGW") {
