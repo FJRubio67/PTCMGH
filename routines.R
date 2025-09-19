@@ -179,7 +179,7 @@ PTCMMLE <- function(init,
         theta = exp(par[3])
         alpha0 = par[3]
         lhaz0_obs <- hlnorm(times_obs, ae0, be0, log = TRUE)
-        chaz0 <- chlnorm(times, ae0, be0, ce0)
+        chaz0 <- chlnorm(times, ae0, be0)
         val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
           theta*sum(exp(-chaz0))
         return(-val)
@@ -192,7 +192,7 @@ PTCMMLE <- function(init,
         theta = exp(par[3])
         alpha0 = par[3]
         lhaz0_obs <- hllogis(times_obs, ae0, be0, log = TRUE)
-        chaz0 <- chllogis(times, ae0, be0, ce0)
+        chaz0 <- chllogis(times, ae0, be0)
         val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
           theta*sum(exp(-chaz0))
         return(-val)
@@ -205,7 +205,7 @@ PTCMMLE <- function(init,
         theta = exp(par[3])
         alpha0 = par[3]
         lhaz0_obs <- hgamma(times_obs, ae0, be0, log = TRUE)
-        chaz0 <- chgamma(times, ae0, be0, ce0)
+        chaz0 <- chgamma(times, ae0, be0)
         val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
           theta*sum(exp(-chaz0))
         return(-val)
@@ -218,7 +218,7 @@ PTCMMLE <- function(init,
         theta = exp(par[3])
         alpha0 = par[3]
         lhaz0_obs <- hweibull(times_obs, ae0, be0, log = TRUE)
-        chaz0 <- chweibull(times, ae0, be0, ce0)
+        chaz0 <- chweibull(times, ae0, be0)
         val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
           theta*sum(exp(-chaz0))
         return(-val)
@@ -261,15 +261,22 @@ PTCMMLE <- function(init,
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
-        beta <- par[4:(3 + p)]
+        alpha0 = par[4:(3 + p_theta)]
+        beta <- par[(4 + p_theta):(3 + p_theta + p)]
         x_beta <- des %*% beta
         x_beta_obs <- x_beta[status]
         exp_x_beta <- as.vector(exp(x_beta))
-        lhaz0 <- hew(times_obs, ae0, be0, ce0, log = TRUE) + 
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hew(times_obs, ae0, be0, ce0, log = TRUE) + 
           x_beta_obs
-        val <- -sum(lhaz0) + sum(chew(times, ae0, be0, 
-                                      ce0) * exp_x_beta)
-        return(val)
+        chaz0 <- chew(times, ae0, be0, ce0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+        
+        return(-val)
       }
     }
     if (dist == "GenGamma") {
@@ -278,31 +285,46 @@ PTCMMLE <- function(init,
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
-        beta <- par[4:(3 + p)]
+        alpha0 = par[4:(3 + p_theta)]
+        beta <- par[(4 + p_theta):(3 + p_theta + p)]
         x_beta <- des %*% beta
         x_beta_obs <- x_beta[status]
         exp_x_beta <- as.vector(exp(x_beta))
-        lhaz0 <- hggamma(times_obs, ae0, be0, ce0, log = TRUE) + 
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hggamma(times_obs, ae0, be0, ce0, log = TRUE) + 
           x_beta_obs
-        val <- -sum(lhaz0) + sum(chggamma(times, ae0, 
-                                          be0, ce0) * exp_x_beta)
-        return(val)
-      }
+        chaz0 <- chggamma(times, ae0, be0, ce0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+        
+        return(-val)
+       }
     }
     if (dist == "LogNormal") {
       p <- ncol(des)
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
-        beta <- par[3:(2 + p)]
+        alpha0 = par[3:(2 + p_theta)]
+        beta <- par[(3 + p_theta):(2 + p_theta + p)]
         x_beta <- des %*% beta
         x_beta_obs <- x_beta[status]
         exp_x_beta <- as.vector(exp(x_beta))
-        lhaz0 <- hlnorm(times_obs, ae0, be0, log = TRUE) + 
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hlnorm(times_obs, ae0, be0, log = TRUE) + 
           x_beta_obs
-        val <- -sum(lhaz0) + sum(chlnorm(times, ae0, 
-                                         be0) * exp_x_beta)
-        return(val)
+        chaz0 <- chlnorm(times, ae0, be0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+        
+        return(-val)
+        
       }
     }
     if (dist == "LogLogistic") {
@@ -310,15 +332,22 @@ PTCMMLE <- function(init,
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
-        beta <- par[3:(2 + p)]
+        alpha0 = par[3:(2 + p_theta)]
+        beta <- par[(3 + p_theta):(2 + p_theta + p)]
         x_beta <- des %*% beta
         x_beta_obs <- x_beta[status]
         exp_x_beta <- as.vector(exp(x_beta))
-        lhaz0 <- hllogis(times_obs, ae0, be0, log = TRUE) + 
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hllogis(times_obs, ae0, be0, log = TRUE) + 
           x_beta_obs
-        val <- -sum(lhaz0) + sum(chllogis(times, ae0, 
-                                          be0) * exp_x_beta)
-        return(val)
+        chaz0 <- chllogis(times, ae0, be0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+        
+        return(-val)
       }
     }
     if (dist == "Gamma") {
@@ -326,15 +355,22 @@ PTCMMLE <- function(init,
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
-        beta <- par[3:(2 + p)]
+        alpha0 = par[3:(2 + p_theta)]
+        beta <- par[(3 + p_theta):(2 + p_theta + p)]
         x_beta <- des %*% beta
         x_beta_obs <- x_beta[status]
         exp_x_beta <- as.vector(exp(x_beta))
-        lhaz0 <- hgamma(times_obs, ae0, be0, log = TRUE) + 
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hgamma(times_obs, ae0, be0, log = TRUE) + 
           x_beta_obs
-        val <- -sum(lhaz0) + sum(chgamma(times, ae0, 
-                                         be0) * exp_x_beta)
-        return(val)
+        chaz0 <- chgamma(times, ae0, be0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+        
+        return(-val)
       }
     }
     if (dist == "Weibull") {
@@ -342,15 +378,22 @@ PTCMMLE <- function(init,
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
-        beta <- par[3:(2 + p)]
+        alpha0 = par[3:(2 + p_theta)]
+        beta <- par[(3 + p_theta):(2 + p_theta + p)]
         x_beta <- des %*% beta
         x_beta_obs <- x_beta[status]
         exp_x_beta <- as.vector(exp(x_beta))
-        lhaz0 <- hweibull(times_obs, ae0, be0, log = TRUE) + 
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hweibull(times_obs, ae0, be0, log = TRUE) + 
           x_beta_obs
-        val <- -sum(lhaz0) + sum(chweibull(times, ae0, 
-                                           be0) * exp_x_beta)
-        return(val)
+        chaz0 <- chweibull(times, ae0, be0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+        
+        return(-val)
       }
     }
   }
