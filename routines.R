@@ -9,6 +9,7 @@ simPTCMGH <- function(n,
                       des_h = NULL,
                       des = NULL,
                       par_base = NULL,
+                      alpha0 = NULL,
                       alpha = NULL,
                       beta_t = NULL,
                       beta_h = NULL,
@@ -48,31 +49,31 @@ simPTCMGH <- function(n,
   if (length(idx) > 0) {
     # General Hazards model
     if (hstr == "GH") {
-      exp.xbeta_t <- exp(des_t %*% beta_t)
+      exp_xbeta_t <- exp(des_t %*% beta_t)
       exp.dif <- exp(des_t %*% beta_t - des_h %*% beta_h)
       p0 <- as.vector(1 - exp(log(1 - u[idx]) * exp.dif[idx]))
-      times[idx] <- as.vector(quantf(p0)/exp.xbeta_t[idx])
+      times[idx] <- as.vector(quantf(p0)/exp_xbeta_t[idx])
     }
     # Proportional Hazards model
     if (hstr == "PH") {
-      exp.xbeta_t <- 1
+      exp_xbeta_t <- 1
       exp.dif <- exp(-des %*% beta)
       p0 <- as.vector(1 - exp(log(1 - u[idx]) * exp.dif[idx]))
-      times[idx] <- as.vector(quantf(p0)/exp.xbeta_t[idx])
+      times[idx] <- as.vector(quantf(p0)/exp_xbeta_t[idx])
     }
     # Accelerated Failure Time model
     if (hstr == "AFT") {
-      exp.xbeta_t <- exp(des %*% beta)
+      exp_xbeta_t <- exp(des %*% beta)
       exp.dif <- 1
       p0 <- as.vector(1 - exp(log(1 - u[idx]) * exp.dif))
-      times[idx] <- as.vector(quantf(p0)/exp.xbeta_t[idx])
+      times[idx] <- as.vector(quantf(p0)/exp_xbeta_t[idx])
     }
     # Accelerated Hazards model
     if (hstr == "AH") {
-      exp.xbeta_t <- exp(des %*% beta)
+      exp_xbeta_t <- exp(des %*% beta)
       exp.dif <- exp(des %*% beta)
       p0 <- as.vector(1 - exp(log(1 - u[idx]) * exp.dif[idx]))
-      times[idx] <- as.vector(quantf(p0)/exp.xbeta_t)
+      times[idx] <- as.vector(quantf(p0)/exp_xbeta_t)
     }
   }
   
@@ -92,7 +93,7 @@ PTCMMLE <- function(init,
                     times,
                     status,
                     hstr = NULL,
-                    baseline =NULL,
+                    dist =NULL,
                     des_theta = NULL,
                     des_t = NULL,
                     des_h = NULL,
@@ -102,613 +103,660 @@ PTCMMLE <- function(init,
 {
   times <- as.vector(times)
   status <- as.vector(as.logical(status))
-  times.obs <- times[status]
-
+  times_obs <- times[status]
+  n_obs <- sum(status)
+  n <- length(times)
   
   if (!is.null(des_h)) 
     des_h <- as.matrix(des_h)
 
   if (!is.null(des)) {
     des <- as.matrix(des)
-    des.obs <- des[status, ]
+    des_obs <- des[status, ]
   }
   
   if (!is.null(des_theta)) {
     des_theta <- as.matrix(des_theta)
-    des_theta.obs <- des_theta[status, ]
+    des_theta_obs <- des_theta[status, ]
   } 
   
   if (!is.null(des_t)) {
     des_t <- as.matrix(des_t)
-    des_t.obs <- des_t[status, ]
+    des_t_obs <- des_t[status, ]
   }
   
-  
-  
+  #----------------------------------------------------------------------------
+  # Baseline
+  #----------------------------------------------------------------------------
   if (hstr == "baseline") {
     if (dist == "PGW") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
-        lhaz0 <- hpgw(times.obs, ae0, be0, ce0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chpgw(times, ae0, be0, 
-                                       ce0))
-        return(val)
+        theta = exp(par[4])
+        alpha0 = par[4]
+        lhaz0_obs <- hpgw(times_obs, ae0, be0, ce0, log = TRUE)
+        chaz0 <- chpgw(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
       }
     }
     if (dist == "EW") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
-        lhaz0 <- hew(times.obs, ae0, be0, ce0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chew(times, ae0, be0, 
-                                      ce0))
-        return(val)
+        theta = exp(par[4])
+        alpha0 = par[4]
+        lhaz0_obs <- hew(times_obs, ae0, be0, ce0, log = TRUE)
+        chaz0 <- chew(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
+
       }
     }
     if (dist == "GenGamma") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
-        lhaz0 <- hggamma(times.obs, ae0, be0, ce0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chggamma(times, ae0, 
-                                          be0, ce0))
-        return(val)
+        theta = exp(par[4])
+        alpha0 = par[4]
+        lhaz0_obs <- hggamma(times_obs, ae0, be0, ce0, log = TRUE)
+        chaz0 <- chggamma(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
       }
     }
     if (dist == "LogNormal") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
-        lhaz0 <- hlnorm(times.obs, ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chlnorm(times, ae0, 
-                                         be0))
-        return(val)
+        theta = exp(par[3])
+        alpha0 = par[3]
+        lhaz0_obs <- hlnorm(times_obs, ae0, be0, log = TRUE)
+        chaz0 <- chlnorm(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
       }
     }
     if (dist == "LogLogistic") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
-        lhaz0 <- hllogis(times.obs, ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chllogis(times, ae0, 
-                                          be0))
-        return(val)
+        theta = exp(par[3])
+        alpha0 = par[3]
+        lhaz0_obs <- hllogis(times_obs, ae0, be0, log = TRUE)
+        chaz0 <- chllogis(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
       }
     }
     if (dist == "Gamma") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
-        lhaz0 <- hgamma(times.obs, ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chgamma(times, ae0, 
-                                         be0))
-        return(val)
+        theta = exp(par[3])
+        alpha0 = par[3]
+        lhaz0_obs <- hgamma(times_obs, ae0, be0, log = TRUE)
+        chaz0 <- chgamma(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
       }
     }
     if (dist == "Weibull") {
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
-        lhaz0 <- hweibull(times.obs, ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chweibull(times, ae0, 
-                                           be0))
-        return(val)
+        theta = exp(par[3])
+        alpha0 = par[3]
+        lhaz0_obs <- hweibull(times_obs, ae0, be0, log = TRUE)
+        chaz0 <- chweibull(times, ae0, be0, ce0)
+        val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
+          theta*sum(exp(-chaz0))
+        return(-val)
       }
     }
   }
+  
+  #----------------------------------------------------------------------------
+  # Proportional Hazards
+  #----------------------------------------------------------------------------
   if (hstr == "PH") {
     if (dist == "PGW") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      p_theta <- ncol(des_theta)
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
-        beta <- par[4:(3 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hpgw(times.obs, ae0, be0, ce0, log = TRUE) + 
-          x.beta.obs
-        val <- -sum(lhaz0) + sum(chpgw(times, ae0, be0, 
-                                       ce0) * exp.x.beta)
-        return(val)
+        alpha0 = par[4:(3 + p_theta)]
+        beta <- par[(4 + p_theta):(3 + p_theta + p)]
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hpgw(times_obs, ae0, be0, ce0, log = TRUE) + 
+          x_beta_obs
+        chaz0 <- chpgw(times, ae0, be0, ce0)*exp_x_beta
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
+          
+        return(-val)
       }
     }
     if (dist == "EW") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         beta <- par[4:(3 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        lhaz0 <- hew(times.obs, ae0, be0, ce0, log = TRUE) + 
-          x.beta.obs
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        lhaz0 <- hew(times_obs, ae0, be0, ce0, log = TRUE) + 
+          x_beta_obs
         val <- -sum(lhaz0) + sum(chew(times, ae0, be0, 
-                                      ce0) * exp.x.beta)
+                                      ce0) * exp_x_beta)
         return(val)
       }
     }
     if (dist == "GenGamma") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         beta <- par[4:(3 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        lhaz0 <- hggamma(times.obs, ae0, be0, ce0, log = TRUE) + 
-          x.beta.obs
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        lhaz0 <- hggamma(times_obs, ae0, be0, ce0, log = TRUE) + 
+          x_beta_obs
         val <- -sum(lhaz0) + sum(chggamma(times, ae0, 
-                                          be0, ce0) * exp.x.beta)
+                                          be0, ce0) * exp_x_beta)
         return(val)
       }
     }
     if (dist == "LogNormal") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        lhaz0 <- hlnorm(times.obs, ae0, be0, log = TRUE) + 
-          x.beta.obs
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        lhaz0 <- hlnorm(times_obs, ae0, be0, log = TRUE) + 
+          x_beta_obs
         val <- -sum(lhaz0) + sum(chlnorm(times, ae0, 
-                                         be0) * exp.x.beta)
+                                         be0) * exp_x_beta)
         return(val)
       }
     }
     if (dist == "LogLogistic") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        lhaz0 <- hllogis(times.obs, ae0, be0, log = TRUE) + 
-          x.beta.obs
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        lhaz0 <- hllogis(times_obs, ae0, be0, log = TRUE) + 
+          x_beta_obs
         val <- -sum(lhaz0) + sum(chllogis(times, ae0, 
-                                          be0) * exp.x.beta)
+                                          be0) * exp_x_beta)
         return(val)
       }
     }
     if (dist == "Gamma") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        lhaz0 <- hgamma(times.obs, ae0, be0, log = TRUE) + 
-          x.beta.obs
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        lhaz0 <- hgamma(times_obs, ae0, be0, log = TRUE) + 
+          x_beta_obs
         val <- -sum(lhaz0) + sum(chgamma(times, ae0, 
-                                         be0) * exp.x.beta)
+                                         be0) * exp_x_beta)
         return(val)
       }
     }
     if (dist == "Weibull") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        lhaz0 <- hweibull(times.obs, ae0, be0, log = TRUE) + 
-          x.beta.obs
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        lhaz0 <- hweibull(times_obs, ae0, be0, log = TRUE) + 
+          x_beta_obs
         val <- -sum(lhaz0) + sum(chweibull(times, ae0, 
-                                           be0) * exp.x.beta)
+                                           be0) * exp_x_beta)
         return(val)
       }
     }
   }
+  
+  #----------------------------------------------------------------------------
+  # Accelerated Failure Time
+  #----------------------------------------------------------------------------
   if (hstr == "AFT") {
     if (dist == "PGW") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         beta <- par[4:(3 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hpgw(times.obs * exp.x.beta.obs, ae0, 
-                      be0, ce0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chpgw(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hpgw(times_obs * exp_x_beta_obs, ae0, 
+                      be0, ce0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chpgw(times * exp_x_beta, 
                                        ae0, be0, ce0))
         return(val)
       }
     }
     if (dist == "EW") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         beta <- par[4:(3 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hew(times.obs * exp.x.beta.obs, ae0, 
-                     be0, ce0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chew(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hew(times_obs * exp_x_beta_obs, ae0, 
+                     be0, ce0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chew(times * exp_x_beta, 
                                       ae0, be0, ce0))
         return(val)
       }
     }
     if (dist == "GenGamma") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         beta <- par[4:(3 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hggamma(times.obs * exp.x.beta.obs, 
-                         ae0, be0, ce0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chggamma(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hggamma(times_obs * exp_x_beta_obs, 
+                         ae0, be0, ce0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chggamma(times * exp_x_beta, 
                                           ae0, be0, ce0))
         return(val)
       }
     }
     if (dist == "LogNormal") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hlnorm(times.obs * exp.x.beta.obs, ae0, 
-                        be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chlnorm(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hlnorm(times_obs * exp_x_beta_obs, ae0, 
+                        be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chlnorm(times * exp_x_beta, 
                                          ae0, be0))
         return(val)
       }
     }
     if (dist == "LogLogistic") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hllogis(times.obs * exp.x.beta.obs, 
-                         ae0, be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chllogis(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hllogis(times_obs * exp_x_beta_obs, 
+                         ae0, be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chllogis(times * exp_x_beta, 
                                           ae0, be0))
         return(val)
       }
     }
     if (dist == "Gamma") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hgamma(times.obs * exp.x.beta.obs, ae0, 
-                        be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chgamma(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hgamma(times_obs * exp_x_beta_obs, ae0, 
+                        be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chgamma(times * exp_x_beta, 
                                          ae0, be0))
         return(val)
       }
     }
     if (dist == "Weibull") {
       p <- ncol(des)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         beta <- par[3:(2 + p)]
-        x.beta <- des %*% beta
-        x.beta.obs <- x.beta[status]
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.obs <- exp.x.beta[status]
-        lhaz0 <- hweibull(times.obs * exp.x.beta.obs, 
-                          ae0, be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chweibull(times * exp.x.beta, 
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        lhaz0 <- hweibull(times_obs * exp_x_beta_obs, 
+                          ae0, be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chweibull(times * exp_x_beta, 
                                            ae0, be0))
         return(val)
       }
     }
   }
+  
+  #----------------------------------------------------------------------------
+  # Accelerated Hazards
+  #----------------------------------------------------------------------------
   if (hstr == "AH") {
     if (dist == "PGW") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         alpha <- par[4:(3 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hpgw(times.obs * exp.x.alpha.obs, ae0, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hpgw(times_obs * exp_x.alpha_obs, ae0, 
                       be0, ce0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chpgw(times * exp.x.alpha, 
-                                       ae0, be0, ce0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chpgw(times * exp_x.alpha, 
+                                       ae0, be0, ce0)/exp_x.alpha)
         return(val)
       }
     }
     if (dist == "EW") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         alpha <- par[4:(3 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hew(times.obs * exp.x.alpha.obs, ae0, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hew(times_obs * exp_x.alpha_obs, ae0, 
                      be0, ce0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chew(times * exp.x.alpha, 
-                                      ae0, be0, ce0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chew(times * exp_x.alpha, 
+                                      ae0, be0, ce0)/exp_x.alpha)
         return(val)
       }
     }
     if (dist == "GenGamma") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         alpha <- par[4:(3 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hggamma(times.obs * exp.x.alpha.obs, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hggamma(times_obs * exp_x.alpha_obs, 
                          ae0, be0, ce0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chggamma(times * exp.x.alpha, 
-                                          ae0, be0, ce0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chggamma(times * exp_x.alpha, 
+                                          ae0, be0, ce0)/exp_x.alpha)
         return(val)
       }
     }
     if (dist == "LogNormal") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hlnorm(times.obs * exp.x.alpha.obs, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hlnorm(times_obs * exp_x.alpha_obs, 
                         ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chlnorm(times * exp.x.alpha, 
-                                         ae0, be0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chlnorm(times * exp_x.alpha, 
+                                         ae0, be0)/exp_x.alpha)
         return(val)
       }
     }
     if (dist == "LogLogistic") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hllogis(times.obs * exp.x.alpha.obs, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hllogis(times_obs * exp_x.alpha_obs, 
                          ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chllogis(times * exp.x.alpha, 
-                                          ae0, be0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chllogis(times * exp_x.alpha, 
+                                          ae0, be0)/exp_x.alpha)
         return(val)
       }
     }
     if (dist == "Gamma") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hgamma(times.obs * exp.x.alpha.obs, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hgamma(times_obs * exp_x.alpha_obs, 
                         ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chgamma(times * exp.x.alpha, 
-                                         ae0, be0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chgamma(times * exp_x.alpha, 
+                                         ae0, be0)/exp_x.alpha)
         return(val)
       }
     }
     if (dist == "Weibull") {
       p <- ncol(des_t)
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p)]
-        exp.x.alpha <- as.vector(exp(des_t %*% alpha))
-        exp.x.alpha.obs <- exp.x.alpha[status]
-        lhaz0 <- hweibull(times.obs * exp.x.alpha.obs, 
+        exp_x.alpha <- as.vector(exp(des_t %*% alpha))
+        exp_x.alpha_obs <- exp_x.alpha[status]
+        lhaz0 <- hweibull(times_obs * exp_x.alpha_obs, 
                           ae0, be0, log = TRUE)
-        val <- -sum(lhaz0) + sum(chweibull(times * exp.x.alpha, 
-                                           ae0, be0)/exp.x.alpha)
+        val <- -sum(lhaz0) + sum(chweibull(times * exp_x.alpha, 
+                                           ae0, be0)/exp_x.alpha)
         return(val)
       }
     }
   }
+  
+  #----------------------------------------------------------------------------
+  # General Hazards
+  #----------------------------------------------------------------------------
   if (hstr == "GH") {
     if (dist == "PGW") {
       p0 <- dim(des_t)[2]
       p1 <- dim(des)[2]
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         alpha <- par[4:(3 + p0)]
         beta <- par[(4 + p0):(3 + p0 + p1)]
         x.alpha <- des_t %*% alpha
-        x.beta <- des %*% beta
-        x.alpha.obs <- x.alpha[status]
-        x.beta.obs <- x.beta[status]
-        exp.x.alpha <- as.vector(exp(x.alpha))
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.dif <- as.vector(exp(x.beta - x.alpha))
-        exp.x.alpha.obs <- as.vector(exp.x.alpha[status])
-        exp.x.beta.obs <- as.vector(exp.x.beta[status])
-        lhaz0 <- hpgw(times.obs * exp.x.alpha.obs, ae0, 
-                      be0, ce0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chpgw(times * exp.x.alpha, 
-                                       ae0, be0, ce0) * exp.x.beta.dif)
+        x_beta <- des %*% beta
+        x.alpha_obs <- x.alpha[status]
+        x_beta_obs <- x_beta[status]
+        exp_x.alpha <- as.vector(exp(x.alpha))
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta.dif <- as.vector(exp(x_beta - x.alpha))
+        exp_x.alpha_obs <- as.vector(exp_x.alpha[status])
+        exp_x_beta_obs <- as.vector(exp_x_beta[status])
+        lhaz0 <- hpgw(times_obs * exp_x.alpha_obs, ae0, 
+                      be0, ce0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chpgw(times * exp_x.alpha, 
+                                       ae0, be0, ce0) * exp_x_beta.dif)
         return(sum(val))
       }
     }
     if (dist == "EW") {
       p0 <- dim(des_t)[2]
       p1 <- dim(des)[2]
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         alpha <- par[4:(3 + p0)]
         beta <- par[(4 + p0):(3 + p0 + p1)]
         x.alpha <- des_t %*% alpha
-        x.beta <- des %*% beta
-        x.alpha.obs <- x.alpha[status]
-        x.beta.obs <- x.beta[status]
-        exp.x.alpha <- as.vector(exp(x.alpha))
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.dif <- as.vector(exp(x.beta - x.alpha))
-        exp.x.alpha.obs <- as.vector(exp.x.alpha[status])
-        exp.x.beta.obs <- as.vector(exp.x.beta[status])
-        lhaz0 <- hew(times.obs * exp.x.alpha.obs, ae0, 
-                     be0, ce0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chew(times * exp.x.alpha, 
-                                      ae0, be0, ce0) * exp.x.beta.dif)
+        x_beta <- des %*% beta
+        x.alpha_obs <- x.alpha[status]
+        x_beta_obs <- x_beta[status]
+        exp_x.alpha <- as.vector(exp(x.alpha))
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta.dif <- as.vector(exp(x_beta - x.alpha))
+        exp_x.alpha_obs <- as.vector(exp_x.alpha[status])
+        exp_x_beta_obs <- as.vector(exp_x_beta[status])
+        lhaz0 <- hew(times_obs * exp_x.alpha_obs, ae0, 
+                     be0, ce0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chew(times * exp_x.alpha, 
+                                      ae0, be0, ce0) * exp_x_beta.dif)
         return(sum(val))
       }
     }
     if (dist == "GenGamma") {
       p0 <- dim(des_t)[2]
       p1 <- dim(des)[2]
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
         alpha <- par[4:(3 + p0)]
         beta <- par[(4 + p0):(3 + p0 + p1)]
         x.alpha <- des_t %*% alpha
-        x.beta <- des %*% beta
-        x.alpha.obs <- x.alpha[status]
-        x.beta.obs <- x.beta[status]
-        exp.x.alpha <- as.vector(exp(x.alpha))
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.dif <- as.vector(exp(x.beta - x.alpha))
-        exp.x.alpha.obs <- as.vector(exp.x.alpha[status])
-        exp.x.beta.obs <- as.vector(exp.x.beta[status])
-        lhaz0 <- hggamma(times.obs * exp.x.alpha.obs, 
-                         ae0, be0, ce0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chggamma(times * exp.x.alpha, 
-                                          ae0, be0, ce0) * exp.x.beta.dif)
+        x_beta <- des %*% beta
+        x.alpha_obs <- x.alpha[status]
+        x_beta_obs <- x_beta[status]
+        exp_x.alpha <- as.vector(exp(x.alpha))
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta.dif <- as.vector(exp(x_beta - x.alpha))
+        exp_x.alpha_obs <- as.vector(exp_x.alpha[status])
+        exp_x_beta_obs <- as.vector(exp_x_beta[status])
+        lhaz0 <- hggamma(times_obs * exp_x.alpha_obs, 
+                         ae0, be0, ce0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chggamma(times * exp_x.alpha, 
+                                          ae0, be0, ce0) * exp_x_beta.dif)
         return(sum(val))
       }
     }
     if (dist == "LogNormal") {
       p0 <- dim(des_t)[2]
       p1 <- dim(des)[2]
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p0)]
         beta <- par[(3 + p0):(2 + p0 + p1)]
         x.alpha <- des_t %*% alpha
-        x.beta <- des %*% beta
-        x.alpha.obs <- x.alpha[status]
-        x.beta.obs <- x.beta[status]
-        exp.x.alpha <- as.vector(exp(x.alpha))
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.dif <- as.vector(exp(x.beta - x.alpha))
-        exp.x.alpha.obs <- as.vector(exp.x.alpha[status])
-        exp.x.beta.obs <- as.vector(exp.x.beta[status])
-        lhaz0 <- hlnorm(times.obs * exp.x.alpha.obs, 
-                        ae0, be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chlnorm(times * exp.x.alpha, 
-                                         ae0, be0) * exp.x.beta.dif)
+        x_beta <- des %*% beta
+        x.alpha_obs <- x.alpha[status]
+        x_beta_obs <- x_beta[status]
+        exp_x.alpha <- as.vector(exp(x.alpha))
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta.dif <- as.vector(exp(x_beta - x.alpha))
+        exp_x.alpha_obs <- as.vector(exp_x.alpha[status])
+        exp_x_beta_obs <- as.vector(exp_x_beta[status])
+        lhaz0 <- hlnorm(times_obs * exp_x.alpha_obs, 
+                        ae0, be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chlnorm(times * exp_x.alpha, 
+                                         ae0, be0) * exp_x_beta.dif)
         return(sum(val))
       }
     }
     if (dist == "LogLogistic") {
       p0 <- dim(des_t)[2]
       p1 <- dim(des)[2]
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p0)]
         beta <- par[(3 + p0):(2 + p0 + p1)]
         x.alpha <- des_t %*% alpha
-        x.beta <- des %*% beta
-        x.alpha.obs <- x.alpha[status]
-        x.beta.obs <- x.beta[status]
-        exp.x.alpha <- as.vector(exp(x.alpha))
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.dif <- as.vector(exp(x.beta - x.alpha))
-        exp.x.alpha.obs <- as.vector(exp.x.alpha[status])
-        exp.x.beta.obs <- as.vector(exp.x.beta[status])
-        lhaz0 <- hllogis(times.obs * exp.x.alpha.obs, 
-                         ae0, be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chllogis(times * exp.x.alpha, 
-                                          ae0, be0) * exp.x.beta.dif)
+        x_beta <- des %*% beta
+        x.alpha_obs <- x.alpha[status]
+        x_beta_obs <- x_beta[status]
+        exp_x.alpha <- as.vector(exp(x.alpha))
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta.dif <- as.vector(exp(x_beta - x.alpha))
+        exp_x.alpha_obs <- as.vector(exp_x.alpha[status])
+        exp_x_beta_obs <- as.vector(exp_x_beta[status])
+        lhaz0 <- hllogis(times_obs * exp_x.alpha_obs, 
+                         ae0, be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chllogis(times * exp_x.alpha, 
+                                          ae0, be0) * exp_x_beta.dif)
         return(sum(val))
       }
     }
     if (dist == "Gamma") {
       p0 <- dim(des_t)[2]
       p1 <- dim(des)[2]
-      log.lik <- function(par) {
+      log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         alpha <- par[3:(2 + p0)]
         beta <- par[(3 + p0):(2 + p0 + p1)]
         x.alpha <- des_t %*% alpha
-        x.beta <- des %*% beta
-        x.alpha.obs <- x.alpha[status]
-        x.beta.obs <- x.beta[status]
-        exp.x.alpha <- as.vector(exp(x.alpha))
-        exp.x.beta <- as.vector(exp(x.beta))
-        exp.x.beta.dif <- as.vector(exp(x.beta - x.alpha))
-        exp.x.alpha.obs <- as.vector(exp.x.alpha[status])
-        exp.x.beta.obs <- as.vector(exp.x.beta[status])
-        lhaz0 <- hgamma(times.obs * exp.x.alpha.obs, 
-                        ae0, be0, log = TRUE) + x.beta.obs
-        val <- -sum(lhaz0) + sum(chgamma(times * exp.x.alpha, 
-                                         ae0, be0) * exp.x.beta.dif)
+        x_beta <- des %*% beta
+        x.alpha_obs <- x.alpha[status]
+        x_beta_obs <- x_beta[status]
+        exp_x.alpha <- as.vector(exp(x.alpha))
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta.dif <- as.vector(exp(x_beta - x.alpha))
+        exp_x.alpha_obs <- as.vector(exp_x.alpha[status])
+        exp_x_beta_obs <- as.vector(exp_x_beta[status])
+        lhaz0 <- hgamma(times_obs * exp_x.alpha_obs, 
+                        ae0, be0, log = TRUE) + x_beta_obs
+        val <- -sum(lhaz0) + sum(chgamma(times * exp_x.alpha, 
+                                         ae0, be0) * exp_x_beta.dif)
         return(sum(val))
       }
     }
   }
   if (method != "nlminb") {
-    OPT <- optim(init, log.lik, control = list(maxit = maxit), 
+    OPT <- optim(init, log_lik, control = list(maxit = maxit), 
                  method = method)
   }
   if (method == "nlminb") {
-    OPT <- nlminb(init, log.lik, control = list(iter.max = maxit))
+    OPT <- nlminb(init, log_lik, control = list(iter.max = maxit))
   }
-  OUT <- list(log_lik = log.lik, OPT = OPT)
+  OUT <- list(log_lik = log_lik, OPT = OPT)
   return(OUT)
 }
 

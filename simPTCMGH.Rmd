@@ -101,6 +101,8 @@ if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} 
 
 # R code
 
+## Simulation
+
 ```{r}
 
 rm(list=ls())
@@ -144,6 +146,64 @@ km <- survfit(Surv(times, status) ~ 1)
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 
+```
+
+## Model fit: baseline
+
+
+```{r}
+
+OPT <- PTCMMLE(init = c(0,0,0,0),
+                    times = times,
+                    status = status,
+                    hstr = "baseline",
+                    dist = "PGW",
+                    des_theta = NULL,
+                    des_t = NULL,
+                    des_h = NULL,
+                    des = NULL,
+                    method = "nlminb", 
+                    maxit = 10000) 
+
+
+MLE <- exp(OPT$OPT$par)
+
+spt <- Vectorize(function(t) exp(- MLE[4]*(1-exp(-chpgw(t,MLE[1],MLE[2],MLE[3])))) )
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt,0,4, col = "red", add= T) 
+```
+
+## Model fit: PH
+
+```{r}
+OPT_PH <- PTCMMLE(init = c(0,0,0,0,0,0,0,0),
+               times = times,
+               status = status,
+               hstr = "PH",
+               dist = "PGW",
+               des_theta = des0,
+               des_t = NULL,
+               des_h = NULL,
+               des = des0[,-1],
+               method = "nlminb", 
+               maxit = 10000) 
+
+
+MLE_PH <- c(exp(OPT_PH$OPT$par[1:3]),OPT_PH$OPT$par[-c(1:3)])
+
+spt_ph <- Vectorize(function(t){
+  
+  theta_i <- as.vector(exp(des0 %*% MLE_PH[4:6]))
+  F_i <- 1 - exp(-chpgw(t,MLE_PH[1],MLE_PH[2],MLE_PH[3])*exp(des0[,-1]%*%MLE_PH[7:8]))
+  survs <- exp(-theta_i*F_i)
+  return(mean(survs))
+  }) 
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt_ph,0,4, col = "red", add= T)  
 ```
 
 # References
