@@ -3,7 +3,7 @@
 simPTCMGH <- function(n,
                       seed = 123,
                       hstr = NULL,
-                      baseline = NULL,
+                      dist = NULL,
                       des_theta = NULL,
                       des_t = NULL,
                       des_h = NULL,
@@ -20,19 +20,19 @@ simPTCMGH <- function(n,
   if (!is.null(des_t)) 
     des_t <- as.matrix(des_t)
   # Baseline hazards
-  if (baseline == "LN") 
+  if (dist == "LN") 
     quantf <- function(p) qlnorm(p, par_base[1], par_base[2])
-  if (baseline == "LL") 
+  if (dist == "LL") 
     quantf <- function(p) qllogis(p, par_base[1], par_base[2])
-  if (baseline == "G") 
+  if (dist == "G") 
     quantf <- function(p) qgamma(p, par_base[1], par_base[2])
-  if (baseline == "W") 
+  if (dist == "W") 
     quantf <- function(p) qweibull(p, par_base[1], par_base[2])
-  if (baseline == "PGW") 
+  if (dist == "PGW") 
     quantf <- function(p) qpgw(p, par_base[1], par_base[2], par_base[3])
-  if (baseline == "EW") 
+  if (dist == "EW") 
     quantf <- function(p) qew(p, par_base[1], par_base[2], par_base[3])
-  if (baseline == "GG") 
+  if (dist == "GG") 
     quantf <- function(p) qggamma(p, par_base[1], par_base[2], par_base[3])
   
   
@@ -81,9 +81,12 @@ simPTCMGH <- function(n,
 }
 
 
-
+#################################################################################
+#################################################################################
 # IN PROGRESS
 # Function to find the MLE
+#################################################################################
+#################################################################################
 
 PTCMMLE <- function(init,
                     times,
@@ -100,19 +103,20 @@ PTCMMLE <- function(init,
   times <- as.vector(times)
   status <- as.vector(as.logical(status))
   times.obs <- times[status]
-  if (!is.null(des)) 
-    des <- as.matrix(des)
+
+  
   if (!is.null(des_h)) 
     des_h <- as.matrix(des_h)
-  if (!is.null(des_t)) 
-    des_t <- as.matrix(des_t)
-  
-  
+
   if (!is.null(des)) {
     des <- as.matrix(des)
     des.obs <- des[status, ]
   }
   
+  if (!is.null(des_theta)) {
+    des_theta <- as.matrix(des_theta)
+    des_theta.obs <- des_theta[status, ]
+  } 
   
   if (!is.null(des_t)) {
     des_t <- as.matrix(des_t)
