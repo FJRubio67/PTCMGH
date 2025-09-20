@@ -24,7 +24,7 @@ des0 <- cbind(1, rnorm(n), rnorm(n))
 sim = simPTCMGH(n = n,
           seed = seed,
           hstr = "AFT",
-          dist = "LN",
+          dist = "LogNormal",
           des_theta = des0,
           des_t = NULL,
           des_h = NULL,
