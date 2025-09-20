@@ -402,7 +402,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # Accelerated Failure Time (IN PROGRESS)
+  # Accelerated Failure Time 
   #----------------------------------------------------------------------------
   if (hstr == "AFT") {
     
@@ -761,8 +761,8 @@ PTCMMLE <- function(init,
   #----------------------------------------------------------------------------
   if (hstr == "GH") {
 
-    p0 <- dim(des_t)[2]
-    p1 <- dim(des)[2]
+    pt <- ncol(des_t)
+    p <- ncol(des)
     p_theta <- ncol(des_theta)
     
     if (dist == "PGW") {
@@ -771,7 +771,27 @@ PTCMMLE <- function(init,
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
         ce0 <- exp(par[3])
+        alpha0 = par[4:(3 + p_theta)]
+        eta <- par[(4 + p_theta):(3 + p_theta + pt)]
+        beta <- par[(4 + p_theta + pt):(3 + p_theta + pt + p)]
+        x_eta <- des_t %*% eta
+        x_eta_obs <- x_eta[status]
+        exp_x_eta <- as.vector(exp(x_eta))
+        exp_x_eta_obs <- exp_x_eta[status]
+        x_beta <- des %*% beta
+        x_beta_obs <- x_beta[status]
+        exp_x_beta <- as.vector(exp(x_beta))
+        exp_x_beta_obs <- exp_x_beta[status]
+        w_theta <- des_theta %*% alpha0
+        theta <- as.vector(exp(w_theta))
+        theta_obs <- theta[status]
+        lhaz0_obs <- hpgw(times_obs * exp_x_eta_obs, ae0, 
+                          be0, ce0, log = TRUE) + x_beta_obs
+        chaz0 <- chpgw(times * exp_x_beta, ae0, be0, ce0)
+        val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
+          sum(theta) + sum(exp( w_theta - chaz0 ))
         
+        return(-val)
         
         
         alpha <- par[4:(3 + p0)]
