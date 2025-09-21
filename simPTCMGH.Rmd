@@ -112,7 +112,7 @@ library(HazReg)
 
 source("routines.R")
 
-n = 1000
+n = 10000
 seed = 123
 set.seed(seed)
 des0 <- cbind(1, rnorm(n), rnorm(n))

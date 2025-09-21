@@ -14,12 +14,15 @@ simPTCMGH <- function(n,
                       beta_t = NULL,
                       beta_h = NULL,
                       beta = NULL) { 
+  
+  # Data preparation
   if (!is.null(des)) 
     des <- as.matrix(des)
   if (!is.null(des_h)) 
     des_h <- as.matrix(des_h)
   if (!is.null(des_t)) 
     des_t <- as.matrix(des_t)
+  
   # Baseline hazards
   if (dist == "LogNormal") 
     quantf <- function(p) qlnorm(p, par_base[1], par_base[2])
@@ -40,21 +43,35 @@ simPTCMGH <- function(n,
   # Simulated uniform random variates
   set.seed(seed)
   u0 = runif(n)
+  
   # Transformed random variates  
   u  = -as.vector(exp(-des_theta%*%alpha))*log(u0)
   
+  # Initialising the output vector and index of cured individuals
   times <- rep(Inf, n)
   idx <- which(u < 1)
   
+  #-----------------------------------------------------------------------------
+  # Simulation step
+  #-----------------------------------------------------------------------------
+  
   if (length(idx) > 0) {
+    
+    #----------------------------------
     # General Hazards model
+    #----------------------------------
+    
     if (hstr == "GH") {
       exp_xbeta_t <- exp(des_t %*% beta_t)
       exp.dif <- exp(des_t %*% beta_t - des_h %*% beta_h)
       p0 <- as.vector(1 - exp(log(1 - u[idx]) * exp.dif[idx]))
       times[idx] <- as.vector(quantf(p0)/exp_xbeta_t[idx])
     }
+    
+    #----------------------------------
     # Proportional Hazards model
+    #----------------------------------
+    
     if (hstr == "PH") {
       exp_xbeta_t <- 1
       exp.dif <- exp(-des %*% beta)
@@ -68,7 +85,11 @@ simPTCMGH <- function(n,
       p0 <- as.vector(1 - exp(log(1 - u[idx]) * exp.dif))
       times[idx] <- as.vector(quantf(p0)/exp_xbeta_t[idx])
     }
+    
+    #----------------------------------
     # Accelerated Hazards model
+    #----------------------------------
+    
     if (hstr == "AH") {
       exp_xbeta_t <- exp(des %*% beta)
       exp.dif <- exp(des %*% beta)
@@ -77,15 +98,16 @@ simPTCMGH <- function(n,
     }
   }
   
+  #----------------------------------
   # Output
+  #----------------------------------
   return(as.vector(times))
 }
 
 
 #################################################################################
 #################################################################################
-# IN PROGRESS
-# Function to find the MLE
+# Function to calculate the MLE
 #################################################################################
 #################################################################################
 
@@ -101,6 +123,11 @@ PTCMMLE <- function(init,
                     method = "Nelder-Mead", 
                     maxit = 100) 
 {
+  
+  #----------------------------------
+  # Data preparation
+  #----------------------------------
+  
   times <- as.vector(times)
   status <- as.vector(as.logical(status))
   times_obs <- times[status]
@@ -126,7 +153,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # Baseline
+  # Baseline model
   #----------------------------------------------------------------------------
   if (hstr == "baseline") {
     if (dist == "PGW") {
@@ -227,7 +254,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # Proportional Hazards
+  # Proportional Hazards model
   #----------------------------------------------------------------------------
   if (hstr == "PH") {    
     
@@ -402,7 +429,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # Accelerated Failure Time 
+  # Accelerated Failure Time model
   #----------------------------------------------------------------------------
   if (hstr == "AFT") {
     
@@ -576,7 +603,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # Accelerated Hazards
+  # Accelerated Hazards model
   #----------------------------------------------------------------------------
   if (hstr == "AH") {
     
@@ -757,7 +784,7 @@ PTCMMLE <- function(init,
   }
   
   #----------------------------------------------------------------------------
-  # General Hazards
+  # General Hazards model
   #----------------------------------------------------------------------------
   if (hstr == "GH") {
 
@@ -945,6 +972,11 @@ PTCMMLE <- function(init,
       }
     }
   }
+  
+  #----------------------------------
+  # Optimisation step
+  #----------------------------------
+  
   if (method != "nlminb") {
     OPT <- optim(init, log_lik, control = list(maxit = maxit), 
                  method = method)
@@ -952,6 +984,11 @@ PTCMMLE <- function(init,
   if (method == "nlminb") {
     OPT <- nlminb(init, log_lik, control = list(iter.max = maxit))
   }
+  
+  #----------------------------------
+  # Output
+  #----------------------------------
+  
   OUT <- list(log_lik = log_lik, OPT = OPT)
   return(OUT)
 }
