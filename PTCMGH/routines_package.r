@@ -1,23 +1,24 @@
 
 #----------------------------------------------------------------------------------------
-# Function to simulate from a promotion-time cure model with GH structure
+#' simPTCMGH function: simulates from a promotion-time cure model with 
+#' different hazard-based regression structures (baseline, AFT, AH, PH, GH)
 #----------------------------------------------------------------------------------------
-# @param n : sample size (number of individuals)
-# @param seed  : seed for simulation
-# @param hstr  : hazard structure (baseline, AFT, AH, PH, GH)
-# @param dist  : baseline hazard distribution
-# @param des_theta : Design matrix for cure proportion parameter
-# @param des_h : Design matrix for hazard level effects (GH)
-# @param des_t : Design matrix for time-level effects (GH)
-# @param des : Design matrix for AFT, AH, and PH models
-# @param par_base  :  parameters of the baseline hazard
-# @param alpha  :  parameters of the baseline model on the cure proportion parameter
-# @param alpha  :  parameters of the regression model on the cure proportion parameter
-# @param beta_h  : regression parameters multiplying the hazard for GH model
-# @param beta_t  : regression parameters multiplying the time scale for GH model
-# @param beta  : regression parameters for AFT, PH, and AH models
-# @return a vector containing the simulated times to event
-# @export
+#' @param n : sample size (number of individuals)
+#' @param seed  : seed for simulation
+#' @param hstr  : hazard structure (baseline, AFT, AH, PH, GH)
+#' @param dist  : baseline hazard distribution
+#' @param des_theta : Design matrix for cure proportion parameter
+#' @param des_h : Design matrix for hazard level effects (GH)
+#' @param des_t : Design matrix for time-level effects (GH)
+#' @param des : Design matrix for AFT, AH, and PH models
+#' @param par_base  :  parameters of the baseline hazard
+#' @param alpha  :  parameters of the baseline model on the cure proportion parameter
+#' @param alpha  :  parameters of the regression model on the cure proportion parameter
+#' @param beta_h  : regression parameters multiplying the hazard for GH model
+#' @param beta_t  : regression parameters multiplying the time scale for GH model
+#' @param beta  : regression parameters for AFT, PH, and AH models
+#' @return a vector containing the simulated times to event
+#' @export
 #----------------------------------------------------------------------------------------
 simPTCMGH <- function(n,
                       seed = 123,
@@ -124,11 +125,39 @@ simPTCMGH <- function(n,
 }
 
 
-#################################################################################
-#################################################################################
-# Function to calculate the MLE
-#################################################################################
-#################################################################################
+
+#----------------------------------------------------------------------------------------
+# PTCMMLE function: Maximum likelihood estimation of Promotion-Time Cure Models with 
+#' different hazard-based regression structures (baseline, AFT, AH, PH, GH)
+#----------------------------------------------------------------------------------------
+#' @param init    : initial point for optimisation step
+#' under the parameterisation (log(scale), log(shape1), log(shape2), alpha, eta, beta) for scale-shape1-shape2 models or
+#' (mu, log(scale), alpha, eta, beta) for log-location scale models.
+#' @param hstr    : hazard structure:
+#'           No covariates ("baseline"),
+#'           Accelerated Faiulre Time ("AFT"),
+#'           Proportional Hazards ("PH"),
+#'           Accelerated Hazards ("AH"),
+#'           General Hazards ("GH")
+#'           *GH is not available with Weibull "dist"
+#' @param dist    : distribution for the baseline hazard:
+#'                 Power Generalised Weibull ("PGW")
+#'                 Generalised Gamma ("GenGamma"))
+#'                 Exponentiated Weibull ("EW")
+#'                 Weibull ("Weibull")
+#'                 Gamma ("Gamma")
+#'                 LogNormal ("LogNormal")
+#'                 LogLogistic ("LogLogistic")
+#' @param method  : "nlminb" or optimisation method to be used in optim (see ?optim)
+#' @param maxit   : maximum number of iterations in optim or nlminb
+#' @param times   : times to event
+#' @param status    : vital status indicators (TRUE or 1 = observed, FALSE  or 0 = censored)
+#' @param des_theta : Design matrix for cure proportion parameter
+#' @param des_h : Design matrix for hazard level effects (GH)
+#' @param des_t : Design matrix for time-level effects (GH)
+#' @param des : Design matrix for AFT, AH, and PH models
+#' @return It returns the output from optim or nlminb for the selected model and the negative log likelihood function
+#' @export
 
 PTCMMLE <- function(init,
                     times,
@@ -155,7 +184,7 @@ PTCMMLE <- function(init,
   
   if (!is.null(des_h)) 
     des_h <- as.matrix(des_h)
-
+  
   if (!is.null(des)) {
     des <- as.matrix(des)
     des_obs <- des[status, ]
@@ -201,7 +230,7 @@ PTCMMLE <- function(init,
         val <- n_obs*alpha0 - n*theta + sum(lhaz0_obs) - sum(chaz0[status]) + 
           theta*sum(exp(-chaz0))
         return(-val)
-
+        
       }
     }
     if (dist == "GenGamma") {
@@ -300,12 +329,12 @@ PTCMMLE <- function(init,
         chaz0 <- chpgw(times, ae0, be0, ce0)*exp_x_beta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
-          
+        
         return(-val)
       }
     }
     if (dist == "EW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -329,7 +358,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "GenGamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -350,10 +379,10 @@ PTCMMLE <- function(init,
           sum(theta) + sum(exp( w_theta - chaz0 ))
         
         return(-val)
-       }
+      }
     }
     if (dist == "LogNormal") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -377,7 +406,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "LogLogistic") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -400,7 +429,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "Gamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -423,7 +452,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "Weibull") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -456,7 +485,7 @@ PTCMMLE <- function(init,
     p_theta <- ncol(des_theta)
     
     if (dist == "PGW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -471,7 +500,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hpgw(times_obs * exp_x_beta_obs, ae0, 
-                         be0, ce0, log = TRUE) + x_beta_obs
+                          be0, ce0, log = TRUE) + x_beta_obs
         chaz0 <- chpgw(times * exp_x_beta, ae0, be0, ce0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -480,7 +509,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "EW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -495,7 +524,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hew(times_obs * exp_x_beta_obs, ae0, 
-                          be0, ce0, log = TRUE) + x_beta_obs
+                         be0, ce0, log = TRUE) + x_beta_obs
         chaz0 <- chew(times * exp_x_beta, ae0, be0, ce0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -504,7 +533,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "GenGamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -519,7 +548,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hggamma(times_obs * exp_x_beta_obs, ae0, 
-                         be0, ce0, log = TRUE) + x_beta_obs
+                             be0, ce0, log = TRUE) + x_beta_obs
         chaz0 <- chggamma(times * exp_x_beta, ae0, be0, ce0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -528,7 +557,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "LogNormal") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -542,7 +571,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hlnorm(times_obs * exp_x_beta_obs, ae0, 
-                             be0, log = TRUE) + x_beta_obs
+                            be0, log = TRUE) + x_beta_obs
         chaz0 <- chlnorm(times * exp_x_beta, ae0, be0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -551,7 +580,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "LogLogistic") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -565,7 +594,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hllogis(times_obs * exp_x_beta_obs, ae0, 
-                            be0, log = TRUE) + x_beta_obs
+                             be0, log = TRUE) + x_beta_obs
         chaz0 <- chllogis(times * exp_x_beta, ae0, be0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -574,7 +603,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "Gamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -588,7 +617,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hgamma(times_obs * exp_x_beta_obs, ae0, 
-                             be0, log = TRUE) + x_beta_obs
+                            be0, log = TRUE) + x_beta_obs
         chaz0 <- chgamma(times * exp_x_beta, ae0, be0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -597,7 +626,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "Weibull") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -611,7 +640,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hweibull(times_obs * exp_x_beta_obs, ae0, 
-                            be0, log = TRUE) + x_beta_obs
+                              be0, log = TRUE) + x_beta_obs
         chaz0 <- chweibull(times * exp_x_beta, ae0, be0)
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -630,7 +659,7 @@ PTCMMLE <- function(init,
     p_theta <- ncol(des_theta)
     
     if (dist == "PGW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -655,7 +684,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "EW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -670,17 +699,17 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hew(times_obs * exp_x_eta_obs, ae0, 
-                          be0, ce0, log = TRUE)
+                         be0, ce0, log = TRUE)
         chaz0 <- chew(times * exp_x_eta, 
-                       ae0, be0, ce0)/exp_x_eta
+                      ae0, be0, ce0)/exp_x_eta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
         
         return(-val)
-     }
+      }
     }
     if (dist == "GenGamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -695,9 +724,9 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hggamma(times_obs * exp_x_eta_obs, ae0, 
-                          be0, ce0, log = TRUE)
+                             be0, ce0, log = TRUE)
         chaz0 <- chggamma(times * exp_x_eta, 
-                       ae0, be0, ce0)/exp_x_eta
+                          ae0, be0, ce0)/exp_x_eta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
         
@@ -705,7 +734,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "LogNormal") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -719,9 +748,9 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hlnorm(times_obs * exp_x_eta_obs, ae0, 
-                          be0, log = TRUE)
+                            be0, log = TRUE)
         chaz0 <- chlnorm(times * exp_x_eta, 
-                       ae0, be0)/exp_x_eta
+                         ae0, be0)/exp_x_eta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
         
@@ -729,7 +758,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "LogLogistic") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -743,17 +772,17 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hllogis(times_obs * exp_x_eta_obs, ae0, 
-                          be0, log = TRUE)
+                             be0, log = TRUE)
         chaz0 <- chllogis(times * exp_x_eta, 
-                       ae0, be0)/exp_x_eta
+                          ae0, be0)/exp_x_eta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
-
+        
         return(-val)
       }
     }
     if (dist == "Gamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -767,9 +796,9 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hgamma(times_obs * exp_x_eta_obs, ae0, 
-                          be0, log = TRUE)
+                            be0, log = TRUE)
         chaz0 <- chgamma(times * exp_x_eta, 
-                       ae0, be0)/exp_x_eta
+                         ae0, be0)/exp_x_eta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
         
@@ -777,7 +806,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "Weibull") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -791,9 +820,9 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hweibull(times_obs * exp_x_eta_obs, ae0, 
-                          be0, log = TRUE)
+                              be0, log = TRUE)
         chaz0 <- chweibull(times * exp_x_eta, 
-                       ae0, be0)/exp_x_eta
+                           ae0, be0)/exp_x_eta
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
         
@@ -806,13 +835,13 @@ PTCMMLE <- function(init,
   # General Hazards model
   #----------------------------------------------------------------------------
   if (hstr == "GH") {
-
+    
     pt <- ncol(des_t)
     ph <- ncol(des_h)
     p_theta <- ncol(des_theta)
     
     if (dist == "PGW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -842,7 +871,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "EW") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -863,7 +892,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hew(times_obs * exp_x_eta_obs, ae0, 
-                          be0, ce0, log = TRUE) + x_beta_obs
+                         be0, ce0, log = TRUE) + x_beta_obs
         chaz0 <- chew(times * exp_x_eta, ae0, be0, ce0)*exp_diff
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -872,7 +901,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "GenGamma") {
-
+      
       log_lik <- function(par) {
         ae0 <- exp(par[1])
         be0 <- exp(par[2])
@@ -893,7 +922,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hggamma(times_obs * exp_x_eta_obs, ae0, 
-                          be0, ce0, log = TRUE) + x_beta_obs
+                             be0, ce0, log = TRUE) + x_beta_obs
         chaz0 <- chggamma(times * exp_x_eta, ae0, be0, ce0)*exp_diff
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -902,7 +931,7 @@ PTCMMLE <- function(init,
       }
     }
     if (dist == "LogNormal") {
-
+      
       log_lik <- function(par) {
         ae0 <- par[1]
         be0 <- exp(par[2])
@@ -922,7 +951,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hlnorm(times_obs * exp_x_eta_obs, ae0, 
-                             be0, log = TRUE) + x_beta_obs
+                            be0, log = TRUE) + x_beta_obs
         chaz0 <- chlnorm(times * exp_x_eta, ae0, be0)*exp_diff
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -952,7 +981,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hllogis(times_obs * exp_x_eta_obs, ae0, 
-                            be0, log = TRUE) + x_beta_obs
+                             be0, log = TRUE) + x_beta_obs
         chaz0 <- chllogis(times * exp_x_eta, ae0, be0)*exp_diff
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
@@ -982,7 +1011,7 @@ PTCMMLE <- function(init,
         theta <- as.vector(exp(w_theta))
         theta_obs <- theta[status]
         lhaz0_obs <- hgamma(times_obs * exp_x_eta_obs, ae0, 
-                             be0, log = TRUE) + x_beta_obs
+                            be0, log = TRUE) + x_beta_obs
         chaz0 <- chgamma(times * exp_x_eta, ae0, be0)*exp_diff
         val <- sum(w_theta[status]) + sum(lhaz0_obs) - sum(chaz0[status]) - 
           sum(theta) + sum(exp( w_theta - chaz0 ))
