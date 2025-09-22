@@ -1,0 +1,104 @@
+* using log directory ‘/Users/javierrubio/Documents/GitHub/PTCMGH/PTCMGH/PTCMGH.Rcheck’
+* using R version 4.4.1 (2024-06-14)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 14.0.0 (clang-1400.0.29.202)
+    GNU Fortran (GCC) 12.2.0
+* running under: macOS 26.0
+* using session charset: UTF-8
+* using options ‘--no-manual --as-cran’
+* checking for file ‘PTCMGH/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘PTCMGH’ version ‘0.1.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking serialization versions ... OK
+* checking whether package ‘PTCMGH’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... NOTE
+unable to verify current time
+* checking DESCRIPTION meta-information ... NOTE
+Malformed Description field: should contain one or more complete sentences.
+Non-standard license specification:
+  What license is it under?
+Standardizable: FALSE
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+PTCMMLE : log_lik: no visible global function definition for ‘hpgw’
+PTCMMLE : log_lik: no visible global function definition for ‘chpgw’
+PTCMMLE : log_lik: no visible global function definition for ‘hew’
+PTCMMLE : log_lik: no visible global function definition for ‘chew’
+PTCMMLE : log_lik: no visible global function definition for ‘hggamma’
+PTCMMLE : log_lik: no visible global function definition for ‘chggamma’
+PTCMMLE : log_lik: no visible global function definition for ‘hlnorm’
+PTCMMLE : log_lik: no visible global function definition for ‘chlnorm’
+PTCMMLE : log_lik: no visible global function definition for ‘hllogis’
+PTCMMLE : log_lik: no visible global function definition for ‘chllogis’
+PTCMMLE : log_lik: no visible global function definition for ‘hgamma’
+PTCMMLE : log_lik: no visible global function definition for ‘chgamma’
+PTCMMLE : log_lik: no visible global function definition for ‘hweibull’
+PTCMMLE : log_lik: no visible global function definition for
+  ‘chweibull’
+PTCMMLE: no visible global function definition for ‘optim’
+PTCMMLE: no visible global function definition for ‘nlminb’
+simPTCMGH : quantf: no visible global function definition for ‘qlnorm’
+simPTCMGH : quantf: no visible global function definition for ‘qllogis’
+simPTCMGH : quantf: no visible global function definition for ‘qgamma’
+simPTCMGH : quantf: no visible global function definition for
+  ‘qweibull’
+simPTCMGH : quantf: no visible global function definition for ‘qpgw’
+simPTCMGH : quantf: no visible global function definition for ‘qew’
+simPTCMGH : quantf: no visible global function definition for ‘qggamma’
+simPTCMGH: no visible global function definition for ‘runif’
+Undefined global functions or variables:
+  chew chgamma chggamma chllogis chlnorm chpgw chweibull hew hgamma
+  hggamma hllogis hlnorm hpgw hweibull nlminb optim qew qgamma qggamma
+  qllogis qlnorm qpgw qweibull runif
+Consider adding
+  importFrom("stats", "nlminb", "optim", "qgamma", "qlnorm", "qweibull",
+             "runif")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in Rd file 'simPTCMGH.Rd'
+  ‘alpha0’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... NONE
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
+* DONE
+Status: 1 WARNING, 3 NOTEs
