@@ -1,0 +1,20 @@
+Package: PTCMGH
+Type: Package
+Title: Promotion Time Cure Models with a General Hazard structure
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "F. Javier Rubio", 
+      email = "f.j.rubio@ucl.ac.uk",
+      role = c("aut", "cre")
+    )
+  )
+Description: Functions to simulate from promotion time cure models with a general hazard structure, and to fit the same type of models.
+License: What license is it under?
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+NeedsCompilation: no
+Packaged: 2025-09-22 09:33:38 UTC; javierrubio
+Author: F. Javier Rubio [aut, cre]
+Maintainer: F. Javier Rubio <f.j.rubio@ucl.ac.uk>
+Built: R 4.4.1; ; 2025-09-22 09:33:40 UTC; unix
