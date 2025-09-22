@@ -1,6 +1,0 @@
-PTCMMLE                 different hazard-based regression structures
-                        (baseline, AFT, AH, PH, GH)
-simPTCMGH               simPTCMGH function: simulates from a
-                        promotion-time cure model with different
-                        hazard-based regression structures (baseline,
-                        AFT, AH, PH, GH)
