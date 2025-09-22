@@ -1,8 +1,10 @@
 ---
 title: "Simulating from a promotion-time cure rate model"
 author: '[Francisco Javier Rubio](https://sites.google.com/site/fjavierrubio67/)'
-date: '`r format(Sys.Date(), "%B %d, %Y")`'
+#date: "`r format(Sys.Date(), "%B %d, %Y")`"
 output:
+  pdf_document:
+    toc: true
   html_document:
     toc: true
     toc_float: true
@@ -137,6 +139,8 @@ rm(list=ls())
 #library(devtools)
 #install_github("FJRubio67/HazReg")
 library(HazReg)
+#library(devtools)
+#install_github("FJRubio67/PTCMGH")
 library(PTCMGH)
 
 n = 10000
