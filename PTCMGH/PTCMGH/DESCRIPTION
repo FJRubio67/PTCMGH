@@ -1,0 +1,16 @@
+Package: PTCMGH
+Type: Package
+Title: Promotion Time Cure Models with several hazard structures
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Jane", "Doe",
+      email = "jane@example.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: Simulation and maximum likelihood estimation of Promotion Time Cure Models
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
