@@ -99,6 +99,33 @@ t^* = \tilde{F}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{
 $$
 if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
 
+
+# Maximum Likelihood Estimation
+
+## No covariates
+The log-likelihood function of the parameters $\Psi = (\theta, \boldsymbol{\gamma}^{\top})^{\top}$ 
+
+\begin{align}
+\ell\left( \Psi \right) &= \sum_{i=1}^n \delta_i \log h(t_i \mid \Psi) - \sum_{i=1}^n H(t_i \mid \Psi)\\
+&= \sum_{i=1}^n \delta_i  \log(\theta) + \sum_{i=1}^n \delta_i  \log \tilde{h}(t_i \mid \boldsymbol{\gamma}) - \sum_{i=1}^n \delta_i \tilde{H}(t_i \mid \boldsymbol{\gamma})\\
+&+ \sum_{i=1}^n \theta \left[ 1 - \exp\left\{ -\tilde{H}(t_i \mid \boldsymbol{\gamma}) \right\} \right]\\
+&= n_O \log(\theta) + \sum_{i=1}^n \delta_i  \log \tilde{h}(t_i \mid \boldsymbol{\gamma}) - \sum_{i=1}^n \delta_i \tilde{H}(t_i \mid \boldsymbol{\gamma})\\
+&-  n\theta - \theta \sum_{i=1}^n \exp\left\{ -\tilde{H}(t_i \mid \boldsymbol{\gamma}) \right\} .
+\end{align}
+
+
+
+## Covariates
+
+The log-likelihood function of the parameters $\Psi = (\boldsymbol{\alpha}^{\top}, \boldsymbol{\beta}^{\top}, \boldsymbol{\eta}^{\top}, \boldsymbol{\gamma}^{\top})^{\top}$ 
+
+
+\begin{align}
+\ell\left( \Psi \right) &= \sum_{i=1}^n \delta_i \log h(t_i \mid \Psi, \boldsymbol{x}) - \sum_{i=1}^n H(t_i \mid \Psi, \boldsymbol{x})\\
+&= \sum_{i=1}^n \delta_i \boldsymbol{w}_i^{\top}\boldsymbol{\alpha} + \sum_{i=1}^n \delta_i  \log \tilde{h}(t_i \mid \boldsymbol{\gamma}) - \sum_{i=1}^n \delta_i \tilde{H}(t_i \mid \boldsymbol{\gamma})\\
+&- \sum_{i=1}^n \exp\{\boldsymbol{w}_i^{\top}\boldsymbol{\alpha}\}  + \sum_{i=1}^n \exp\left\{\boldsymbol{w}_i^{\top}\boldsymbol{\alpha} -\tilde{H}(t_i \mid \boldsymbol{\gamma}) \right\}.
+\end{align}
+
 # R code
 
 ## Simulation
@@ -107,10 +134,10 @@ if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} 
 
 rm(list=ls())
 
-
+#library(devtools)
+#install_github("FJRubio67/HazReg")
 library(HazReg)
-
-source("routines.R")
+library(PTCMGH)
 
 n = 10000
 seed = 123

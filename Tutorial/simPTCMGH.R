@@ -6,12 +6,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 rm(list=ls())
 
-
+#library(devtools)
+#install_github("FJRubio67/HazReg")
 library(HazReg)
+library(PTCMGH)
 
-source("routines.R")
-
-n = 1000
+n = 10000
 seed = 123
 set.seed(seed)
 des0 <- cbind(1, rnorm(n), rnorm(n))
