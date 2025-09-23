@@ -4,7 +4,7 @@
 
 The `PTCMGH` R package implements promotion time cure models of the type:
 
-$S_c(t) = \exp\{ -\theta \tilde{F}(t) \}, \quad t \geq 0,$
+$S_c(t) = \exp [ -\theta \tilde{F}(t) ] , \quad t \geq 0,$
 
 If a covariates ${\bf x} \in {\mathbb R}^p$ are available, these can be incorporated into the two different components of the PTCM.
 
@@ -12,7 +12,7 @@ If a covariates ${\bf x} \in {\mathbb R}^p$ are available, these can be incorpor
 
 2. Let ${\bf z} \subseteq {\bf x}$, and consider the hazard structure $\tilde{H}(t \mid {\bf z})$. Then, we can define
 
-$\tilde{F}(t \mid {\bf z}) = 1 - \exp\{-\tilde{H}(t \mid {\bf z})\}.$
+$\tilde{F}(t \mid {\bf z}) = 1 - \exp[-\tilde{H}(t \mid {\bf z})].$
 
 The `PTCMGH` R package provides functions for simulating survival times from PTCMs with proportional hazards, accelerated failure time, and general hazard structures under a log-link for $\theta$, as well as for performing maximum likelihood estimation of these models. The hazard structure used for modelling $\tilde{F}$ can include the proportional hazards, the accelerated failure time, or more [general hazard structures](https://doi.org/10.1177/0962280218782293).
 
@@ -62,6 +62,4 @@ library(PTCMGH)
 
 
 ### See also: 
-- [Simulating survival times from a General Hazard structure with a flexible baseline hazard](https://rpubs.com/FJRubio/GHSim)
-- [Short course on Parametric Survival Analysis](https://github.com/FJRubio67/ShortCourseParamSurvival)
-- [HazReg.jl](https://github.com/FJRubio67/HazReg.jl)
+- ...
