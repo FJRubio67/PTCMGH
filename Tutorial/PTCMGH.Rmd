@@ -1,0 +1,379 @@
+---
+title: "`PTCMGH` R package: Promotion Time Cure Models with a General Hazard structure"
+author: '[Francisco Javier Rubio](https://sites.google.com/site/fjavierrubio67/)'
+#date: "`r format(Sys.Date(), "%B %d, %Y")`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+  pdf_document:
+    toc: true
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Promotion Time Cure Models
+
+Promotion-Time Cure Models (PTCMs) are a class of survival regression models in which a subset of the population is assumed to be cured [@yakovlev:1996; @tsodikov:1998; @chen:1999], that is, never to experience the event of interest. Equivalently, this sub-population is characterised by infinite survival times. The survival function of a PTCM is given by [@amico:2018]
+
+$$
+S_c(t) = \exp\left\{ -\theta \tilde{F}(t) \right\}, \quad t \geq 0,
+$$
+where $\theta>0$ is a positive parameter, and $\tilde{F}$ is a cumulative distribution function with support on ${\mathbb R}_+$. Note that 
+
+$$
+\lim_{t\to\infty} S_c(t) = \exp\{-\theta\},
+$$
+which represents the cured fraction. Since the survival function associated with the PTCM does not decrease to zero, it is often referred to as an ``improper'' survival function [@peng:2021]. 
+
+If covariates ${\bf x} \in {\mathbb R}^p$ are available, they can be incorporated into the two components of the PTCM:
+
+1. Let ${\bf w} \subseteq {\bf x}$, and consider the log-link $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$.
+
+2. Let ${\bf z} \subseteq {\bf x}$, and consider the hazard structure $\tilde{H}(t \mid {\bf z})$. Then, we can define 
+
+$$
+\tilde{F}(t \mid {\bf z}) = 1 - \exp\{-\tilde{H}(t \mid {\bf z})\}.
+$$
+The hazard structure $\tilde{H}(t \mid {\bf z})$ can include the proportional hazards, the accelerated failure time, or more general hazard structures [@rubio:2019].
+
+
+## Proportional Hazards (PH)
+
+Suppose that the hazard and cumulative hazard functions follow a proportional hazards (PH) structure:
+
+\begin{align}
+\tilde{h}(t \mid {\bf z}) &= \tilde{h}_0(t \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &= \tilde{H}_0(t \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\},
+\end{align}
+
+where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. A simulation from the PTCM with a PH structure (PTCM-PH) can then be obtained as follows:
+
+$$
+t^* = \tilde{F}_0^{-1}\left( 1 - \exp\left\{ \exp\left\{ - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
+$$
+if $1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\}>0$, and $t^*=\infty$ otherwise.
+
+
+## Accelerated Failure Time (AFT)
+
+Suppose that the hazard and cumulative hazard functions follow an accelerated failure time (AFT) hazard structure:
+
+\begin{align}
+\tilde{h}(t \mid {\bf z}) &= \tilde{h}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\beta}\} \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &= \tilde{H}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\beta}\} \mid \boldsymbol{\gamma}) ,
+\end{align}
+
+where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. A simulation from the PTCM with a AFT structure (PTCM-AFT) can then be obtained as follows:
+
+$$
+t^* = \tilde{F}_0^{-1}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right)  \exp\left\{ - {\bf z}^{\top}\boldsymbol{\beta} \right\}.
+$$
+if $\log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
+
+## General Hazards (GH)
+
+Suppose that the hazard and cumulative hazard functions follow a General Hazard (GH) structure [@chen:2001] [@rubio:2019]:
+
+\begin{align}
+\tilde{h}(t \mid {\bf z}) &= \tilde{h}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\eta}\} \mid \boldsymbol{\gamma}) \exp\{{\bf z}^{\top} \boldsymbol{\beta}\}, \\
+\tilde{H}(t \mid {\bf z}) &= \tilde{H}_0(t \exp\{{\bf z}^{\top} \boldsymbol{\eta}\} \mid \boldsymbol{\gamma})  \exp\{{\bf z}^{\top} \boldsymbol{\beta} - {\bf z}^{\top} \boldsymbol{\eta}\}\},
+\end{align}
+
+where $\tilde{h}_0$ is a baseline hazard associated with a distribution $\tilde{F}_0$, with parameters $\boldsymbol{\gamma}$. Let also $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$, and $u$ be a realisation from a $U(0,1)$ distribution. A simulation from the PTCM with a GH structure (PTCM-GH) can then be obtained as follows:
+
+$$
+t^* = \exp\left\{ - {\bf z}^{\top}\boldsymbol{\eta} \right\} \tilde{F}_0^{-1}\left( 1 - \exp\left\{ \exp\left\{ {\bf z}^{\top}\boldsymbol{\eta}  - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\}  \right).
+$$
+if $1 - \exp\left\{ \exp\left\{ {\bf z}^{\top}\boldsymbol{\eta}  - {\bf z}^{\top}\boldsymbol{\beta} \right\}\log\left[ 1 + \log(u)\exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \right] \right\} < 1$, and $t^*=\infty$ otherwise.
+
+## A general simulation strategy
+
+Provided that one can simulate from the distribution $\tilde{F}(t \mid {\bf z})$ using numerical methods, simulating from a PTCM can be accomplished simply by generating $u \sim U(0,1)$ and solving:
+
+$$
+t^* = \tilde{F}\left( -\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} \mid {\bf z} \right)
+$$
+if $-\log(u) \exp\left\{-\alpha_0 - {\bf w}^{\top}\boldsymbol{\alpha}  \right\} < 1$, and $t^*=\infty$ otherwise.
+
+
+# Maximum Likelihood Estimation
+
+## Model with no covariates (baseline)
+The log-likelihood function of the parameters $\Psi = (\theta, \boldsymbol{\gamma}^{\top})^{\top}$ is:
+
+\begin{align}
+\ell\left( \Psi \right) &= \sum_{i=1}^n \delta_i \log h(t_i \mid \Psi) - \sum_{i=1}^n H(t_i \mid \Psi)\\
+&= \sum_{i=1}^n \delta_i  \log(\theta) + \sum_{i=1}^n \delta_i  \log \tilde{h}(t_i \mid \boldsymbol{\gamma}) - \sum_{i=1}^n \delta_i \tilde{H}(t_i \mid \boldsymbol{\gamma})\\
+&+ \sum_{i=1}^n \theta \left[ 1 - \exp\left\{ -\tilde{H}(t_i \mid \boldsymbol{\gamma}) \right\} \right]\\
+&= n_O \log(\theta) + \sum_{i=1}^n \delta_i  \log \tilde{h}(t_i \mid \boldsymbol{\gamma}) - \sum_{i=1}^n \delta_i \tilde{H}(t_i \mid \boldsymbol{\gamma})\\
+&-  n\theta - \theta \sum_{i=1}^n \exp\left\{ -\tilde{H}(t_i \mid \boldsymbol{\gamma}) \right\},
+\end{align}
+
+where $n_O =  \sum_{i=1}^n \delta_i$.
+
+
+## Models with covariates: PH, AFT, AH, GH
+
+The log-likelihood function of the model parameters $\Psi = (\boldsymbol{\alpha}^{\top}, \boldsymbol{\beta}^{\top}, \boldsymbol{\eta}^{\top}, \boldsymbol{\gamma}^{\top})^{\top}$ is:
+
+\begin{align}
+\ell\left( \Psi \right) &= \sum_{i=1}^n \delta_i \log h(t_i \mid \Psi, \boldsymbol{z}_i) - \sum_{i=1}^n H(t_i \mid \Psi, \boldsymbol{z}_i)\\
+&= \sum_{i=1}^n \delta_i \boldsymbol{w}_i^{\top}\boldsymbol{\alpha} + \sum_{i=1}^n \delta_i  \log \tilde{h}(t_i \mid \boldsymbol{\gamma}, \boldsymbol{z}_i) - \sum_{i=1}^n \delta_i \tilde{H}(t_i \mid \boldsymbol{\gamma}, \boldsymbol{z}_i)\\
+&- \sum_{i=1}^n \exp\{\boldsymbol{w}_i^{\top}\boldsymbol{\alpha}\}  + \sum_{i=1}^n \exp\left\{\boldsymbol{w}_i^{\top}\boldsymbol{\alpha} -\tilde{H}(t_i \mid \boldsymbol{\gamma}, \boldsymbol{z}_i) \right\}.
+\end{align}
+
+**Disclaimer**: Although this R package implements several hazard structures, some models may exhibit practical non-identifiability if the follow-up period is not sufficiently long. Users should verify this (e.g., by plotting parameter profile likelihoods). A potential remedy is to fit simpler models, though pathological cases may still arise where the cure model is difficult to estimate due to limited follow-up or high censoring rates. Such issues are well documented in the literature [@lambert:2019].
+
+# R code
+
+The following R code illustrates how to simulate survival times from a PTCM-GH model and perform maximum likelihood estimation for PTCMs with proportional hazards, accelerated failure time, accelerated hazards, and general hazard structures using a log-link for $\theta$, via the [`PTCMGH` R package](https://github.com/FJRubio67/PTCMGH).
+
+The `PTCMGH` R package depends on functions from the [`HazReg` R package](https://github.com/FJRubio67/HazReg), which must also be installed and loaded.
+
+## Simulation
+
+```{r}
+
+rm(list=ls())
+
+#library(devtools)
+#install_github("FJRubio67/HazReg")
+library(HazReg)
+#library(devtools)
+#install_github("FJRubio67/PTCMGH")
+library(PTCMGH)
+library(survival)
+library(knitr)
+
+# Data simulation
+n = 10000
+seed = 123
+set.seed(seed)
+# Design matrix
+des0 <- cbind(1, rnorm(n), rnorm(n))
+
+# Simulation: PTCM with GH structure and LogNormal baseline hazard, and log-link
+sim = simPTCMGH(n = n,
+          seed = seed,
+          hstr = "GH",
+          dist = "LogNormal",
+          des_theta = des0,
+          des_t = des0[, -1],
+          des_h = des0[, -1],
+          des = NULL,
+          par_base = c(-0.25, 0.1),
+          alpha = c(0.5, 0.5, 0.5),
+          beta_t = c(0.5, 0.5),
+          beta_h = c(1.0, 1.0),
+          beta = NULL)
+
+# Inducing censoring
+cens = 6
+status <- ifelse(sim < cens, 1, 0)
+mean(status)
+
+times <- ifelse(sim< cens, sim, cens)
+
+# Kaplan-Meier estimator for the survival times
+km <- survfit(Surv(times, status) ~ 1)
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+
+```
+
+## Model fit: baseline 
+
+
+```{r}
+
+# Model fitting
+OPT <- PTCMMLE(init = c(0,0,0),
+                    times = times,
+                    status = status,
+                    hstr = "baseline",
+                    dist = "LogNormal",
+                    des_theta = NULL,
+                    des_t = NULL,
+                    des_h = NULL,
+                    des = NULL,
+                    method = "nlminb", 
+                    maxit = 10000) 
+
+# MLE
+MLE <- c(OPT$OPT$par[1],exp(OPT$OPT$par[2]),exp(OPT$OPT$par[3]))
+
+# Fitted survival function 
+spt <- Vectorize(function(t) exp(- MLE[3]*(1-exp(-chlnorm(t,MLE[1],MLE[2])))) )
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt,0,6, col = "red", add= T) 
+```
+
+## Model fit: PH 
+
+```{r}
+# Model fitting
+OPT_PH <- PTCMMLE(init = c(0,0,0,0,0,0,0),
+               times = times,
+               status = status,
+               hstr = "PH",
+               dist = "LogNormal",
+               des_theta = des0,
+               des_t = NULL,
+               des_h = NULL,
+               des = des0[,-1],
+               method = "nlminb", 
+               maxit = 10000) 
+
+# MLE
+MLE_PH <- c(OPT_PH$OPT$par[1],exp(OPT_PH$OPT$par[2]),OPT_PH$OPT$par[-c(1:2)])
+
+# Population survival function 
+spt_ph <- Vectorize(function(t){
+  
+  theta_i <- as.vector(exp(des0 %*% MLE_PH[3:5]))
+  F_i <- 1 - exp(-chlnorm(t,MLE_PH[1],MLE_PH[2])*exp(des0[,-1]%*%MLE_PH[6:7]))
+  survs <- exp(-theta_i*F_i)
+  return(mean(survs))
+  }) 
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt_ph,0,6, col = "red", add= T)  
+```
+
+# Model fit: AFT 
+
+
+```{r}
+# Model fitting
+OPT_AFT <- PTCMMLE(init = c(0,0,0,0,0,0,0),
+                  times = times,
+                  status = status,
+                  hstr = "AFT",
+                  dist = "LogNormal",
+                  des_theta = des0,
+                  des_t = NULL,
+                  des_h = NULL,
+                  des = des0[,-1],
+                  method = "nlminb", 
+                  maxit = 10000) 
+
+# MLE
+MLE_AFT <- c(OPT_AFT$OPT$par[1],exp(OPT_AFT$OPT$par[2]),OPT_AFT$OPT$par[-c(1:2)])
+
+# Population survival function
+spt_aft <- Vectorize(function(t){
+  
+  theta_i <- as.vector(exp(des0 %*% MLE_AFT[3:5]))
+  F_i <- 1 - exp(-chlnorm(as.vector(t*exp(des0[,-1]%*%MLE_AFT[6:7])),MLE_AFT[1],MLE_AFT[2]))
+  survs <- exp(-theta_i*F_i)
+  return(mean(survs))
+}) 
+
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt_aft,0,6, col = "red", add= T)  
+```
+
+
+# Model fit: Accelerated Hazards
+
+```{r}
+# Model fitting
+OPT_AH <- PTCMMLE(init = c(0,0,0,0,0,0,0),
+                   times = times,
+                   status = status,
+                   hstr = "AH",
+                   dist = "LogNormal",
+                   des_theta = des0,
+                   des_t = des0[,-1],
+                   des_h = NULL,
+                   des = NULL,
+                   method = "nlminb", 
+                   maxit = 10000) 
+
+MLE
+MLE_AH <- c(OPT_AH$OPT$par[1],exp(OPT_AH$OPT$par[2]),OPT_AH$OPT$par[-c(1:2)])
+
+# Population survival function
+spt_ah <- Vectorize(function(t){
+  
+  theta_i <- as.vector(exp(des0 %*% MLE_AH[3:5]))
+  F_i <- 1 - exp(-chlnorm(as.vector(t*exp(des0[,-1]%*%MLE_AH[6:7])),MLE_AH[1],MLE_AH[2])*as.vector(exp(-des0[,-1]%*%MLE_AH[6:7])))
+  survs <- exp(-theta_i*F_i)
+  return(mean(survs))
+}) 
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt_ah,0,6, col = "red", add= T)  
+```
+
+# Model fit: General Hazards
+
+```{r}
+# Model fitting
+OPT_GH <- PTCMMLE(init = c(0,0,0,0,0,0,0,0,0),
+                   times = times,
+                   status = status,
+                   hstr = "GH",
+                   dist = "LogNormal",
+                   des_theta = des0,
+                   des_t = des0[,-1],
+                   des_h = des0[,-1],
+                   des = NULL,
+                   method = "nlminb", 
+                   maxit = 10000) 
+
+# MLE
+MLE_GH <- c(OPT_GH$OPT$par[1],exp(OPT_GH$OPT$par[2]),OPT_GH$OPT$par[-c(1:2)])
+
+# Comparison: MLE vs true parameter values
+cbind(MLE_GH, c(-0.25, 0.1,0.5, 0.5, 0.5,0.5, 0.5, 1.0, 1.0))
+
+
+# Population survival function
+spt_gh <- Vectorize(function(t){
+  
+  theta_i <- as.vector(exp(des0 %*% MLE_GH[3:5]))
+  F_i <- 1 - exp(-chlnorm(as.vector(t*as.vector(exp(des0[,-1]%*%MLE_GH[6:7]))),MLE_GH[1],MLE_GH[2])*as.vector(exp(des0[,-1]%*%MLE_GH[8:9] - des0[,-1]%*%MLE_GH[6:7])))
+  survs <- exp(-theta_i*F_i)
+  return(mean(survs))
+}) 
+
+plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
+     ylim = c(0,1), xlab = "Time", ylab = "Survival")
+curve(spt_gh,0,6, col = "red", add= T)  
+
+# Confidence intervals for the parameters (positive parameters transformed to log-scale)
+CI_GH <- Conf_Int(OPT_GH$log_lik, OPT_GH$OPT$par, level = 0.95)
+kable(CI_GH, digits = 3)
+```
+
+## Model comparison
+
+```{r}
+# Akaike information criterion
+AIC <- 2*OPT$OPT$objective + 2*length(OPT$OPT$par)
+AIC_PH <- 2*OPT_PH$OPT$objective + 2*length(OPT_PH$OPT$par)
+AIC_AFT <- 2*OPT_AFT$OPT$objective + 2*length(OPT_AFT$OPT$par)
+AIC_AH <- 2*OPT_AH$OPT$objective + 2*length(OPT_AH$OPT$par)
+AIC_GH <- 2*OPT_GH$OPT$objective + 2*length(OPT_GH$OPT$par)
+
+# AICs: baseline, PH, AFT, AH, GH
+AICs <- c(AIC, AIC_PH, AIC_AFT, AIC_AH, AIC_GH)
+
+AICs
+
+which.min(AICs)
+
+```
+
+# References
