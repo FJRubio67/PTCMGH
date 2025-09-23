@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Promotion Time Cure Models
 
-Promotion-Time Cure Models (PTCMs) are a class of survival regression models in which a subset of the population is assumed to be cured [@yakovlev:1996; @tsodikov:1998; @chen:1999], that is, never to experience the event of interest. Equivalently, this sub-population is characterised by infinite survival times. The survival function of a PTCM is given by [@amico:2018]
+Promotion-Time Cure Models (PTCMs) are a class of survival regression models in which a subset of the population is assumed to be cured [@yakovlev:1996; @tsodikov:1998; @chen:1999; @amico:2018], that is, never to experience the event of interest. Equivalently, this sub-population is characterised by infinite survival times. The survival function of a PTCM is given by:
 
 $$
 S_c(t) = \exp\left\{ -\theta \tilde{F}(t) \right\}, \quad t \geq 0,
@@ -27,13 +27,13 @@ where $\theta>0$ is a positive parameter, and $\tilde{F}$ is a cumulative distri
 $$
 \lim_{t\to\infty} S_c(t) = \exp\{-\theta\},
 $$
-which represents the cured fraction. Since the survival function associated with the PTCM does not decrease to zero, it is often referred to as an ``improper'' survival function [@peng:2021]. 
+which represents the cured fraction. Since the survival function associated with the PTCM does not decrease to zero, it is often referred to as an "improper" survival function [@peng:2021]. 
 
 If covariates ${\bf x} \in {\mathbb R}^p$ are available, they can be incorporated into the two components of the PTCM:
 
-1. Let ${\bf w} \subseteq {\bf x}$, and consider the log-link $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$.
+1. Let ${\bf w} \subseteq {\bf x}$, and model the log-link $\theta({\bf w}) = \exp({\alpha_0+\bf w}^{\top}{\boldsymbol{\alpha}})$,  where $\alpha_0$ is an intercept.
 
-2. Let ${\bf z} \subseteq {\bf x}$, and consider the hazard structure $\tilde{H}(t \mid {\bf z})$. Then, we can define 
+2. Let ${\bf z} \subseteq {\bf x}$, and model the hazard structure as $\tilde{H}(t \mid {\bf z})$. Then, we can define 
 
 $$
 \tilde{F}(t \mid {\bf z}) = 1 - \exp\{-\tilde{H}(t \mid {\bf z})\}.
@@ -118,7 +118,7 @@ where $n_O =  \sum_{i=1}^n \delta_i$.
 
 ## Models with covariates: PH, AFT, AH, GH
 
-The log-likelihood function of the model parameters $\Psi = (\boldsymbol{\alpha}^{\top}, \boldsymbol{\beta}^{\top}, \boldsymbol{\eta}^{\top}, \boldsymbol{\gamma}^{\top})^{\top}$ is:
+The log-likelihood function of the model parameters $\Psi = (\alpha_0,\boldsymbol{\alpha}^{\top}, \boldsymbol{\beta}^{\top}, \boldsymbol{\eta}^{\top}, \boldsymbol{\gamma}^{\top})^{\top}$ is:
 
 \begin{align}
 \ell\left( \Psi \right) &= \sum_{i=1}^n \delta_i \log h(t_i \mid \Psi, \boldsymbol{z}_i) - \sum_{i=1}^n H(t_i \mid \Psi, \boldsymbol{z}_i)\\
@@ -126,13 +126,50 @@ The log-likelihood function of the model parameters $\Psi = (\boldsymbol{\alpha}
 &- \sum_{i=1}^n \exp\{\boldsymbol{w}_i^{\top}\boldsymbol{\alpha}\}  + \sum_{i=1}^n \exp\left\{\boldsymbol{w}_i^{\top}\boldsymbol{\alpha} -\tilde{H}(t_i \mid \boldsymbol{\gamma}, \boldsymbol{z}_i) \right\}.
 \end{align}
 
-**Disclaimer**: Although this R package implements several hazard structures, some models may exhibit practical non-identifiability if the follow-up period is not sufficiently long. Users should verify this (e.g., by plotting parameter profile likelihoods). A potential remedy is to fit simpler models, though pathological cases may still arise where the cure model is difficult to estimate due to limited follow-up or high censoring rates. Such issues are well documented in the literature [@lambert:2019].
+# `PTCMGH` R package
+
+The `PTCMGH` R package provides functions for simulating survival times from PTCMs with proportional hazards, accelerated failure time, and general hazard structures under a log-link for $\theta$, as well as for performing maximum likelihood estimation of these models. The hazard structure used for modelling $\tilde{F}$ can include the proportional hazards, the accelerated failure time, or more [general hazard structures](https://doi.org/10.1177/0962280218782293).
+
+- General Hazard (GH) model.
+
+- Accelerated Failure Time (AFT) model.
+
+- Proportional Hazards (PH) model.
+
+- Accelerated Hazards (AH) model.
+
+
+These models are fitted using the R commands `nlminb` and `optim`. Thus, the user needs to specify the initial points and to check the convergence of the optimisation step, as usual.
+
+
+The current version of the `PTCMGH` R package implements the following parametric baseline hazards for the models discussed in the previous section, using the command `PTCMMLE`.
+
+- [Power Generalised Weibull](http://rpubs.com/FJRubio/PGW) (PGW) distribution. 
+ 
+- [Exponentiated Weibull](http://rpubs.com/FJRubio/EWD) (EW) distribution. 
+ 
+- [Generalised Gamma](http://rpubs.com/FJRubio/GG) (GenGamma) distribuiton. 
+
+- [Gamma](https://en.wikipedia.org/wiki/Gamma_distribution) (Gamma) distribution. 
+
+- [Lognormal](https://en.wikipedia.org/wiki/Log-normal_distribution) (LogNormal) distribution. 
+
+- [Log-logistic](https://en.wikipedia.org/wiki/Log-logistic_distribution) (LogLogistic) distribution. 
+
+- [Weibull](https://en.wikipedia.org/wiki/Weibull_distribution) (Weibull) distribution. (only for AFT, PH, and AH models) 
+
+
+All positive parameters are transformed into the real line using a `log` link (reparameterisation).
+
+The `PTCMGH` R package depends on functions from the [`HazReg` R package](https://github.com/FJRubio67/HazReg), which must also be installed and loaded.
+
+**Disclaimer**: Although this R package implements several hazard structures, some models may exhibit practical non-identifiability if the follow-up period is not sufficiently long [@rubio:2023]. Users should verify this (e.g., by plotting parameter profile likelihoods). A potential remedy is to fit simpler models, though pathological cases may still arise where the cure model is difficult to estimate due to limited follow-up or high censoring rates. Such issues are well documented in the literature [@lambert:2019].
+
 
 # R code
 
-The following R code illustrates how to simulate survival times from a PTCM-GH model and perform maximum likelihood estimation for PTCMs with proportional hazards, accelerated failure time, accelerated hazards, and general hazard structures using a log-link for $\theta$, via the [`PTCMGH` R package](https://github.com/FJRubio67/PTCMGH).
+The following R code illustrates how to simulate survival times from a PTCM-GH model and perform maximum likelihood estimation for PTCMs with baseline, proportional hazards, accelerated failure time, accelerated hazards, and general hazard structures using a log-link for $\theta$, via the [`PTCMGH` R package](https://github.com/FJRubio67/PTCMGH).
 
-The `PTCMGH` R package depends on functions from the [`HazReg` R package](https://github.com/FJRubio67/HazReg), which must also be installed and loaded.
 
 ## Simulation
 
@@ -149,11 +186,14 @@ library(PTCMGH)
 library(survival)
 library(knitr)
 
+# ?simPTCMGH
+# ?PTCMMLE
+
 # Data simulation
 n = 10000
 seed = 123
 set.seed(seed)
-# Design matrix
+# Design matrix (includes the intercept in the first entry for theta)
 des0 <- cbind(1, rnorm(n), rnorm(n))
 
 # Simulation: PTCM with GH structure and LogNormal baseline hazard, and log-link
@@ -182,7 +222,6 @@ times <- ifelse(sim< cens, sim, cens)
 km <- survfit(Surv(times, status) ~ 1)
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
-
 ```
 
 ## Model fit: baseline 
@@ -212,6 +251,8 @@ spt <- Vectorize(function(t) exp(- MLE[3]*(1-exp(-chlnorm(t,MLE[1],MLE[2])))) )
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt,0,6, col = "red", add= T) 
+legend("topright", legend = c("KM","Baseline"), col = c("black","red"), 
+       lwd = c(2,2))
 ```
 
 ## Model fit: PH 
@@ -245,6 +286,8 @@ spt_ph <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_ph,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","PH"), col = c("black","red"), 
+       lwd = c(2,2))
 ```
 
 # Model fit: AFT 
@@ -280,6 +323,8 @@ spt_aft <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_aft,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","AFT"), col = c("black","red"), 
+       lwd = c(2,2))
 ```
 
 
@@ -314,6 +359,8 @@ spt_ah <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_ah,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","AH"), col = c("black","red"), 
+       lwd = c(2,2))
 ```
 
 # Model fit: General Hazards
@@ -351,6 +398,8 @@ spt_gh <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_gh,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","GH"), col = c("black","red"), 
+       lwd = c(2,2))
 
 # Confidence intervals for the parameters (positive parameters transformed to log-scale)
 CI_GH <- Conf_Int(OPT_GH$log_lik, OPT_GH$OPT$par, level = 0.95)
