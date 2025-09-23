@@ -15,11 +15,14 @@ library(PTCMGH)
 library(survival)
 library(knitr)
 
+# ?simPTCMGH
+# ?PTCMMLE
+
 # Data simulation
 n = 10000
 seed = 123
 set.seed(seed)
-# Design matrix
+# Design matrix (includes the intercept in the first entry for theta)
 des0 <- cbind(1, rnorm(n), rnorm(n))
 
 # Simulation: PTCM with GH structure and LogNormal baseline hazard, and log-link
@@ -50,7 +53,6 @@ plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1,
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 
 
-
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Model fitting
@@ -75,6 +77,8 @@ spt <- Vectorize(function(t) exp(- MLE[3]*(1-exp(-chlnorm(t,MLE[1],MLE[2])))) )
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt,0,6, col = "red", add= T) 
+legend("topright", legend = c("KM","Baseline"), col = c("black","red"), 
+       lwd = c(2,2))
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -106,6 +110,8 @@ spt_ph <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_ph,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","PH"), col = c("black","red"), 
+       lwd = c(2,2))
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -138,6 +144,8 @@ spt_aft <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_aft,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","AFT"), col = c("black","red"), 
+       lwd = c(2,2))
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -169,6 +177,8 @@ spt_ah <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_ah,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","AH"), col = c("black","red"), 
+       lwd = c(2,2))
 
 
 ## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -204,6 +214,8 @@ spt_gh <- Vectorize(function(t){
 plot(km$time, km$surv, type = "l", col = "black", lwd = 2, lty = 1, 
      ylim = c(0,1), xlab = "Time", ylab = "Survival")
 curve(spt_gh,0,6, col = "red", add= T)  
+legend("topright", legend = c("KM","GH"), col = c("black","red"), 
+       lwd = c(2,2))
 
 # Confidence intervals for the parameters (positive parameters transformed to log-scale)
 CI_GH <- Conf_Int(OPT_GH$log_lik, OPT_GH$OPT$par, level = 0.95)
