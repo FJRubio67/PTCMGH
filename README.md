@@ -62,4 +62,4 @@ library(PTCMGH)
 
 
 ### See also: 
-- [`PTCMGH` R package: Promotion Time Cure Models with a General Hazard structure](https://rpubs.com/FJRubio)
+- [`PTCMGH` R package: Promotion Time Cure Models with a General Hazard structure](https://rpubs.com/FJRubio/PTCMGH)
