@@ -165,6 +165,7 @@ The `PTCMGH` R package depends on functions from the [`HazReg` R package](https:
 
 **Disclaimer**: Although this R package implements several hazard structures, some models may exhibit practical non-identifiability if the follow-up period is not sufficiently long [@rubio:2023]. Users should verify this (e.g., by plotting parameter profile likelihoods). A potential remedy is to fit simpler models, though pathological cases may still arise where the cure model is difficult to estimate due to limited follow-up or high censoring rates. Such issues are well documented in the literature [@lambert:2019].
 
+A list of R packages implementing different types of cure survival models can be found at: [CRAN Task View: Survival Analysis](https://cran.r-project.org/web/views/Survival.html)
 
 # R code
 
