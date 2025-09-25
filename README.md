@@ -6,7 +6,7 @@ The `PTCMGH` R package implements promotion time cure models of the type:
 
 $S_c(t) = \exp [ -\theta \tilde{F}(t) ] , \quad t \geq 0,$
 
-If a covariates ${\bf x} \in {\mathbb R}^p$ are available, these can be incorporated into the two different components of the PTCM.
+If a vector of covariates ${\bf x} \in {\mathbb R}^p$ are available, these can be incorporated into the two different components of the PTCM.
 
 1. Let ${\bf w} \subseteq {\bf x}$, and consider the log-link $\theta({\bf w}) = \exp({\bf w}^{\top}{\boldsymbol{\alpha}})$.
 
