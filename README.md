@@ -1,6 +1,4 @@
-# PTCMGH
-
-## Promotion Time Cure Models with a General Hazard Structure
+# PTCMGH: Promotion Time Cure Models with a General Hazard Structure
 
 [![R package](https://img.shields.io/badge/language-R-blue.svg)](https://www.r-project.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
