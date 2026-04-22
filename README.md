@@ -15,7 +15,7 @@ enter both the cure and the survival components of the model.
 
 The population survival function takes the form:
 
-$$S_c(t) = \exp[-\theta \, \tilde{F}(t)], \quad t \geq 0,$$
+$$S_c(t) = \exp[-\theta  \tilde{F}(t)], \quad t \geq 0,$$
 
 where $\theta > 0$ governs the cured fraction and $\tilde{F}(t)$ is a proper
 cumulative distribution function. Covariates $\mathbf{x} \in \mathbb{R}^p$ can
